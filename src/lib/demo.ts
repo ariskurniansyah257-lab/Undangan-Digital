@@ -1,21 +1,5 @@
 import type { InvitationView } from "./invitation-view";
-
-// Placeholder gambar berbasis SVG (data-URI) agar demo selalu tampil tanpa
-// bergantung host eksternal. Konten orisinal.
-function svgImg(w: number, h: number, c1: string, c2: string, label: string): string {
-  const fs = Math.round(Math.min(w, h) / 3.2);
-  const s =
-    `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'>` +
-    `<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>` +
-    `<stop offset='0' stop-color='${c1}'/><stop offset='1' stop-color='${c2}'/></linearGradient></defs>` +
-    `<rect width='100%' height='100%' fill='url(#g)'/>` +
-    `<circle cx='${w * 0.82}' cy='${h * 0.18}' r='${Math.min(w, h) * 0.06}' fill='rgba(255,255,255,0.18)'/>` +
-    `<text x='50%' y='52%' font-family='Georgia,serif' font-size='${fs}' fill='rgba(255,255,255,0.85)' text-anchor='middle' dominant-baseline='middle'>${label}</text>` +
-    `</svg>`;
-  return "data:image/svg+xml," + encodeURIComponent(s);
-}
-
-const G = (l: string, a = "#4a2f2a", b = "#c19a4f") => svgImg(400, 400, a, b, l);
+import { woman, man, couple } from "./people";
 
 // Undangan demo — dipakai di /u/demo untuk memperlihatkan hasil akhir
 // tanpa perlu data dari editor. Semua konten fiktif & orisinal.
@@ -37,19 +21,19 @@ export const DEMO_INVITATION: InvitationView = {
     fullName: "Bimasena Adiwangsa, S.T.",
     parents: "Putra dari Bapak Raden Suryanto & Ibu Larasati",
     instagram: "bimasena",
-    photo: svgImg(400, 500, "#3f4a37", "#a9a06b", "B"),
+    photo: man("#3f4a37", "#a9a06b"),
   },
   bride: {
     name: "Andira",
     fullName: "Andira Kusuma Wardhani, S.Ked.",
     parents: "Putri dari Bapak Hendra Kusuma & Ibu Ratna Dewi",
     instagram: "andira.kw",
-    photo: svgImg(400, 500, "#7a2438", "#c19a4f", "A"),
+    photo: woman("#7a2438", "#c19a4f"),
   },
   mainDate: "2026-11-14",
   coupleTagline: "Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan pernikahan kami",
   hashtag: "#AndiraBerbima",
-  couplePhoto: svgImg(800, 500, "#4a2f2a", "#c19a4f", "A & B"),
+  couplePhoto: couple("#4a2f2a", "#c19a4f"),
   galleryMode: "slide",
   videoUrl: null,
   closingMessage:
@@ -79,12 +63,12 @@ export const DEMO_INVITATION: InvitationView = {
     { bankName: "Bank Mandiri", accountNumber: "0987654321", accountName: "Bimasena Adiwangsa" },
   ],
   gallery: [
-    { imageUrl: svgImg(500, 500, "#4a2f2a", "#c19a4f", "❀"), caption: null },
-    { imageUrl: svgImg(500, 500, "#7a2438", "#d4af6a", "♥"), caption: null },
-    { imageUrl: svgImg(500, 500, "#3f4a37", "#a9a06b", "❀"), caption: null },
-    { imageUrl: svgImg(500, 500, "#1e3a5f", "#c9a86a", "♥"), caption: null },
-    { imageUrl: svgImg(500, 500, "#5a1e2a", "#d4a35a", "❀"), caption: null },
-    { imageUrl: svgImg(500, 500, "#2a2444", "#d9a3c9", "♥"), caption: null },
+    { imageUrl: couple("#4a2f2a", "#c19a4f"), caption: null },
+    { imageUrl: woman("#7a2438", "#d4af6a"), caption: null },
+    { imageUrl: man("#3f4a37", "#a9a06b"), caption: null },
+    { imageUrl: couple("#1e3a5f", "#c9a86a"), caption: null },
+    { imageUrl: woman("#5a1e2a", "#d4a35a"), caption: null },
+    { imageUrl: couple("#2a2444", "#d9a3c9"), caption: null },
   ],
   story: [
     {

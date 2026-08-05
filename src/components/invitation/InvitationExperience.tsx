@@ -35,6 +35,14 @@ function useCountdown(targetIso: string | null) {
   };
 }
 
+function hexToRgba(hex: string, a: number): string {
+  const m = hex.replace("#", "");
+  const r = parseInt(m.slice(0, 2), 16);
+  const g = parseInt(m.slice(2, 4), 16);
+  const b = parseInt(m.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h2 className="mb-6 text-center font-serif text-2xl text-[color:var(--accent)] sm:text-3xl">{children}</h2>;
 }
@@ -53,6 +61,7 @@ export default function InvitationExperience({
   orderItem?: { type: "package"; refId: string; name: string; price: number };
 }) {
   const theme = getTheme(themeSlug);
+  const tintBg = hexToRgba(theme.vars.tint, 0.5);
   const [opened, setOpened] = useState(false);
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -118,7 +127,7 @@ export default function InvitationExperience({
     >
       <OrnamentPattern
         type={theme.ornament}
-        className="pointer-events-none absolute inset-0 -z-10 h-full w-full text-[color:var(--accent)] opacity-[0.07]"
+        className="pointer-events-none absolute inset-0 -z-10 h-full w-full text-[color:var(--heading)] opacity-[0.13]"
       />
       {data.songUrl && <audio ref={audioRef} src={data.songUrl} loop preload="auto" />}
 
@@ -180,7 +189,7 @@ export default function InvitationExperience({
         </section>
 
         {data.quoteText && (
-          <section className="bg-[var(--tint)] px-8 py-16 text-center">
+          <section className="px-8 py-16 text-center" style={{ backgroundColor: tintBg }}>
             <p className="mx-auto max-w-md font-serif text-lg italic leading-relaxed text-gray-600">&ldquo;{data.quoteText}&rdquo;</p>
             {data.quoteSource && <p className="mt-4 text-sm font-semibold text-[color:var(--accent)]">({data.quoteSource})</p>}
           </section>
@@ -215,7 +224,7 @@ export default function InvitationExperience({
           </div>
         </section>
 
-        <section id="acara" className="bg-[var(--tint)] px-6 py-16">
+        <section id="acara" className="px-6 py-16" style={{ backgroundColor: tintBg }}>
           <SectionTitle>Rangkaian Acara</SectionTitle>
           <div className="space-y-6">
             {data.events.map((ev, i) => (
@@ -248,7 +257,7 @@ export default function InvitationExperience({
         )}
 
         {data.gallery.length > 0 && (
-          <section id="galeri" className="overflow-hidden bg-[var(--tint)] py-16">
+          <section id="galeri" className="overflow-hidden py-16" style={{ backgroundColor: tintBg }}>
             <div className="px-6"><SectionTitle>Galeri</SectionTitle></div>
             {data.galleryMode === "slide" ? (
               <div className="relative w-full overflow-hidden">
@@ -293,7 +302,7 @@ export default function InvitationExperience({
           </section>
         )}
 
-        <section id="rsvp" className="bg-[var(--tint)] px-6 py-16">
+        <section id="rsvp" className="px-6 py-16" style={{ backgroundColor: tintBg }}>
           <SectionTitle>Konfirmasi Kehadiran</SectionTitle>
           <RSVPBlock invitationId={previewMode ? null : data.id} defaultName={guestName} accent={theme.vars.accent} />
         </section>
