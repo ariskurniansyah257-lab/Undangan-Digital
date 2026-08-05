@@ -849,13 +849,19 @@ document.querySelectorAll('.copy-btn').forEach(btn => {
   });
 });
 
-/* ---- RSVP & Ucapan (tersimpan di localStorage browser tamu).
-   Untuk buku tamu bersama antartamu, sambungkan submitRSVP/loadWishes
-   ke backend (mis. Google Apps Script / Firebase). ---- */
-const STORAGE_KEY = 'wedding_wishes_v1';
+/* ---- RSVP & Ucapan — Supabase Backend ---- */
+const SUPABASE_URL = 'https://mfjlqrhncccggjehmzsl.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_-oCXqfNDcPVx4zNOsvswew_x6BhUcMl';
+
+const supabaseHeaders = {
+  'apikey': SUPABASE_ANON_KEY,
+  'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=representation'
+};
 
 function timeAgo(ts){
-  const s = Math.floor((Date.now()-ts)/1000);
+  const s = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
   if(s<60) return 'Baru saja';
   const m = Math.floor(s/60); if(m<60) return `${m} menit lalu`;
   const h = Math.floor(m/60); if(h<24) return `${h} jam lalu`;
@@ -863,13 +869,38 @@ function timeAgo(ts){
   const mo = Math.floor(d/30); return `${mo} bulan lalu`;
 }
 
-function getWishes(){
-  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch(e){ return []; }
+async function getWishes(){
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/wishes?order=created_at.desc&limit=100`,
+      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY } }
+    );
+    if(!res.ok) throw new Error(res.statusText);
+    return await res.json();
+  } catch(e) {
+    console.error('Gagal memuat ucapan:', e);
+    return [];
+  }
 }
-function saveWishes(list){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); return true; }
-  catch(e){ return false; }
+
+async function saveWish(entry){
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/wishes`, {
+      method: 'POST',
+      headers: supabaseHeaders,
+      body: JSON.stringify({
+        name: entry.name,
+        attendance: entry.attendance,
+        guests: Number(entry.guests) || 1,
+        message: entry.message
+      })
+    });
+    if(!res.ok) throw new Error(res.statusText);
+    return true;
+  } catch(e) {
+    console.error('Gagal mengirim ucapan:', e);
+    return false;
+  }
 }
 
 function escapeHtml(str){
@@ -883,7 +914,7 @@ function renderWishes(list){
   const track = document.getElementById('wishTrack');
   const dots = document.getElementById('wishDots');
   const total = list.length;
-  const hadirCount = list.filter(x => x.attendance === 'hadir').reduce((a,x) => a + (Number(x.guests)||1), 0);
+  const hadirCount = list.filter(x => x.attendance === 'hadir').reduce((a,x) => a + (Number(x.guests) || 1), 0);
   document.getElementById('statTotal').textContent = total;
   document.getElementById('statHadir').textContent = hadirCount;
   if(total === 0){
@@ -895,7 +926,7 @@ function renderWishes(list){
   const badgeLabel = {hadir:'Hadir', tidak:'Tidak Hadir', ragu:'Ragu-ragu'};
   track.innerHTML = list.map(item => `
     <div class="wish-card">
-      <div class="top"><span class="nm">${escapeHtml(item.name)}</span><span class="tm">${timeAgo(item.ts)}</span></div>
+      <div class="top"><span class="nm">${escapeHtml(item.name)}</span><span class="tm">${timeAgo(item.created_at)}</span></div>
       <span class="badge ${badgeClass[item.attendance]||'ragu'}">${badgeLabel[item.attendance]||'-'}</span>
       <div class="msg">${escapeHtml(item.message)}</div>
     </div>`).join('');
@@ -927,7 +958,7 @@ function startAutoSlide(){
   track.addEventListener('pointerdown', () => clearInterval(autoSlideTimer), {once:true});
 }
 
-document.getElementById('rsvpForm').addEventListener('submit', (ev) => {
+document.getElementById('rsvpForm').addEventListener('submit', async (ev) => {
   ev.preventDefault();
   const btn = document.getElementById('submitBtn');
   const toast = document.getElementById('toast');
@@ -935,16 +966,14 @@ document.getElementById('rsvpForm').addEventListener('submit', (ev) => {
     name: document.getElementById('fName').value.trim(),
     attendance: document.getElementById('fAttend').value,
     guests: document.getElementById('fGuests').value || 1,
-    message: document.getElementById('fMsg').value.trim(),
-    ts: Date.now()
+    message: document.getElementById('fMsg').value.trim()
   };
   if(!entry.name || !entry.message) return;
   btn.disabled = true; btn.textContent = 'Mengirim…';
-  const list = getWishes();
-  list.unshift(entry);
-  const ok = saveWishes(list);
+  const ok = await saveWish(entry);
   btn.disabled = false; btn.textContent = 'Kirim Ucapan + RSVP';
   if(ok){
+    const list = await getWishes();
     renderWishes(list);
     toast.classList.add('show');
     ev.target.reset();
@@ -953,7 +982,7 @@ document.getElementById('rsvpForm').addEventListener('submit', (ev) => {
   }
 });
 
-renderWishes(getWishes());
+(async () => { renderWishes(await getWishes()); })();
 </script>
 </body>
 </html>
