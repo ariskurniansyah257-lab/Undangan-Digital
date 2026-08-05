@@ -16,6 +16,25 @@ section[id] {
   scroll-margin-top: 72px;
 }
 
+/* Mode slide undangan: tiap <section> = satu layar penuh, snap ke berikutnya */
+.snap-slides {
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.snap-slides::-webkit-scrollbar {
+  display: none;
+}
+.snap-slides > section {
+  min-height: 100dvh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 5rem; /* ruang untuk bottom-nav & tombol musik */
+}
+
 body {
   color: var(--foreground);
   background: var(--background);

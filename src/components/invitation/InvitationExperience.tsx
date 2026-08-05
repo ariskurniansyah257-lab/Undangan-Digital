@@ -168,8 +168,12 @@ export default function InvitationExperience({
         </button>
       )}
 
-      {/* ISI */}
-      <div className={opened ? "opacity-100" : "opacity-0"}>
+      {/* ISI — mode slide: tiap section satu layar, snap ke berikutnya */}
+      <div
+        className={`snap-slides h-[100dvh] overflow-y-scroll transition-opacity duration-500 ${
+          opened ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      >
         <section id="hero" className="relative flex min-h-screen flex-col items-center justify-center px-6 py-20 text-center">
           <OrnamentCorner type={theme.ornament} className="absolute left-0 top-0 h-24 w-24 text-[color:var(--accent)] opacity-50" />
           <OrnamentCorner type={theme.ornament} className="absolute bottom-0 right-0 h-24 w-24 rotate-180 text-[color:var(--accent)] opacity-50" />
@@ -408,7 +412,7 @@ function RSVPBlock({ invitationId, defaultName, accent }: { invitationId: string
       </form>
       {wishes.length > 0 && (
         <div className="mt-6 space-y-3">
-          {wishes.slice(0, 20).map((w, i) => (
+          {wishes.slice(0, 3).map((w, i) => (
             <div key={i} className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-black/5">
               <div className="flex items-center justify-between">
                 <p className="font-medium text-[color:var(--heading)]">{w.name}</p>
