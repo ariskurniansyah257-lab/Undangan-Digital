@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git pull *)",
+      "Bash(git checkout *)",
+      "Bash(git fetch *)",
+      "Bash(git merge *)",
+      "Bash(curl *)",
+      "Bash(mkdir *)",
+      "Bash(npm install *)",
+      "Bash(npm init *)",
+      "Bash(npx *)",
+      "Bash(python3 -m http.server *)",
+      "mcp__github__pull_request_read",
+      "mcp__github__list_branches",
+      "mcp__github__get_file_contents",
+      "mcp__github__list_commits",
+      "mcp__github__actions_list",
+      "mcp__github__create_pull_request",
+      "mcp__github__list_pull_requests",
+      "mcp__github__search_code",
+      "mcp__github__search_issues",
+      "mcp__github__search_pull_requests"
+    ]
+  }
+}
