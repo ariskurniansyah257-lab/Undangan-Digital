@@ -29,9 +29,11 @@ section[id] {
   min-height: 100dvh;
   scroll-snap-align: start;
   scroll-snap-stop: always;
+  scroll-margin-top: 0; /* batalkan offset anchor home agar slide center */
   display: flex;
   flex-direction: column;
   justify-content: center;
+  padding-top: 3.5rem;
   padding-bottom: 5rem; /* ruang untuk bottom-nav & tombol musik */
 }
 
