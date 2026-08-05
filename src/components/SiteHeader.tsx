@@ -2,10 +2,14 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function SiteHeader() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const supabase = await createClient();
+    const res = await supabase.auth.getUser();
+    user = res.data.user;
+  } catch {
+    // DB tak terjangkau — tampilkan navbar tamu.
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/90 backdrop-blur">
@@ -15,15 +19,10 @@ export default async function SiteHeader() {
           <span className="text-xl font-light text-gray-800">Digital</span>
         </Link>
         <nav className="hidden items-center gap-6 text-sm text-gray-600 md:flex">
-          <Link href="/#paket" className="hover:text-brand-600">
-            Paket
-          </Link>
-          <Link href="/#tema" className="hover:text-brand-600">
-            Tema
-          </Link>
-          <Link href="/#acara" className="hover:text-brand-600">
-            Jenis Acara
-          </Link>
+          <Link href="/#fitur" className="hover:text-brand-600">Fitur</Link>
+          <Link href="/#tema" className="hover:text-brand-600">Tema</Link>
+          <Link href="/#paket" className="hover:text-brand-600">Paket</Link>
+          <Link href="/#faq" className="hover:text-brand-600">FAQ</Link>
         </nav>
         <div className="flex items-center gap-2">
           {user ? (

@@ -1,9 +1,106 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { EVENT_TYPES } from "@/lib/constants";
-import type { Invitation } from "@/lib/types";
+import { DEMO_INVITATION } from "@/lib/demo";
+import type {
+  InvitationView,
+  EventItem,
+  BankItem,
+  GalleryItem,
+  StoryItem,
+} from "@/lib/invitation-view";
+import InvitationExperience from "@/components/invitation/InvitationExperience";
 
 export const revalidate = 0;
+
+function resolveGuest(to?: string): string {
+  if (!to) return "Tamu Undangan";
+  try {
+    return decodeURIComponent(to).replace(/\+/g, " ");
+  } catch {
+    return to;
+  }
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  if (slug === "demo") {
+    return { title: `${DEMO_INVITATION.title} — Undangan Pernikahan` };
+  }
+  return { title: "Undangan Digital" };
+}
+
+/** Ambil undangan dari database dan petakan ke InvitationView. */
+async function loadFromDb(slug: string): Promise<InvitationView | null> {
+  const supabase = await createClient();
+  const { data: inv } = await supabase
+    .from("invitations")
+    .select("*")
+    .eq("slug", slug)
+    .eq("status", "published")
+    .maybeSingle();
+  if (!inv) return null;
+
+  const [{ data: events }, { data: banks }, { data: gallery }, { data: story }, song] =
+    await Promise.all([
+      supabase.from("invitation_events").select("*").eq("invitation_id", inv.id).order("sort_order"),
+      supabase.from("invitation_banks").select("*").eq("invitation_id", inv.id).order("sort_order"),
+      supabase.from("invitation_gallery").select("*").eq("invitation_id", inv.id).order("sort_order"),
+      supabase.from("invitation_story").select("*").eq("invitation_id", inv.id).order("sort_order"),
+      inv.song_id
+        ? supabase.from("songs").select("url").eq("id", inv.song_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+
+  const cfg = (inv.config ?? {}) as Record<string, any>;
+
+  return {
+    id: inv.id,
+    slug: inv.slug,
+    eventType: inv.event_type,
+    title: inv.title,
+    status: inv.status,
+    quoteText: inv.quote_text,
+    quoteSource: inv.quote_source,
+    photoMode: inv.photo_mode,
+    themeName: null,
+    songUrl: (song?.data as { url?: string } | null)?.url ?? null,
+    groom: cfg.groom ?? { name: "Mempelai Pria" },
+    bride: cfg.bride ?? { name: "Mempelai Wanita" },
+    mainDate: cfg.mainDate ?? (events?.[0]?.event_date ?? null),
+    coupleTagline: cfg.coupleTagline ?? null,
+    hashtag: cfg.hashtag ?? null,
+    closingMessage: cfg.closingMessage ?? "Terima kasih atas doa dan restunya.",
+    events: (events ?? []).map(
+      (e): EventItem => ({
+        name: e.name,
+        date: e.event_date,
+        startTime: e.start_time?.slice(0, 5) ?? null,
+        endTime: e.end_time?.slice(0, 5) ?? null,
+        locationName: e.location_name,
+        locationAddress: e.location_address,
+        mapUrl: e.map_url,
+      }),
+    ),
+    banks: (banks ?? []).map(
+      (b): BankItem => ({
+        bankName: b.bank_name,
+        accountNumber: b.account_number,
+        accountName: b.account_name,
+      }),
+    ),
+    gallery: (gallery ?? []).map(
+      (g): GalleryItem => ({ imageUrl: g.image_url, caption: g.caption }),
+    ),
+    story: (story ?? []).map(
+      (s): StoryItem => ({ title: s.title, story: s.story, storyDate: s.story_date }),
+    ),
+  };
+}
 
 export default async function PublicInvitationPage({
   params,
@@ -14,50 +111,14 @@ export default async function PublicInvitationPage({
 }) {
   const { slug } = await params;
   const { to } = await searchParams;
-  const supabase = await createClient();
+  const guestName = resolveGuest(to);
 
-  const { data } = await supabase
-    .from("invitations")
-    .select("*")
-    .eq("slug", slug)
-    .eq("status", "published")
-    .single();
-
+  const data = slug === "demo" ? DEMO_INVITATION : await loadFromDb(slug);
   if (!data) notFound();
-  const inv = data as Invitation;
-  const eventLabel =
-    EVENT_TYPES.find((e) => e.value === inv.event_type)?.label ??
-    inv.event_type;
-
-  const guestName = to ? decodeURIComponent(to) : "Tamu Undangan";
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-brand-50 to-white px-4 text-center">
-      <p className="text-sm uppercase tracking-widest text-brand-600">
-        {eventLabel}
-      </p>
-      <h1 className="mt-3 font-serif text-4xl text-gray-900">{inv.title}</h1>
-
-      {inv.quote_text && (
-        <blockquote className="mt-6 max-w-xl text-gray-600">
-          “{inv.quote_text}”
-          {inv.quote_source && (
-            <footer className="mt-2 text-sm text-gray-400">
-              — {inv.quote_source}
-            </footer>
-          )}
-        </blockquote>
-      )}
-
-      <div className="mt-10 rounded-xl border border-brand-100 bg-white px-6 py-4 shadow-sm">
-        <p className="text-sm text-gray-500">Kepada Yth.</p>
-        <p className="text-lg font-semibold text-gray-900">{guestName}</p>
-      </div>
-
-      <p className="mt-10 max-w-md text-sm text-gray-400">
-        Tampilan tema penuh (galeri, hitung mundur, RSVP, lagu, dsb.) hadir di
-        Fase 3.
-      </p>
+    <div className="min-h-screen bg-[#241715]">
+      <InvitationExperience data={data} guestName={guestName} />
     </div>
   );
 }
