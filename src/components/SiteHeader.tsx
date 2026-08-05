@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import CartLink from "./CartLink";
 
 export default async function SiteHeader() {
   let user = null;
@@ -24,7 +25,8 @@ export default async function SiteHeader() {
           <Link href="/#paket" className="hover:text-brand-600">Paket</Link>
           <Link href="/#faq" className="hover:text-brand-600">FAQ</Link>
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <CartLink />
           {user ? (
             <Link href="/dashboard" className="btn-primary">
               Dashboard

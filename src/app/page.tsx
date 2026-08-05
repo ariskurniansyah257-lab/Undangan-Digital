@@ -3,6 +3,7 @@ import SiteHeader from "@/components/SiteHeader";
 import PhoneMockup from "@/components/landing/PhoneMockup";
 import FaqAccordion from "@/components/landing/FaqAccordion";
 import WhatsappFloat from "@/components/landing/WhatsappFloat";
+import AddToCartButton from "@/components/AddToCartButton";
 import { createClient } from "@/lib/supabase/server";
 import { EVENT_TYPES, formatIDR } from "@/lib/constants";
 import type { Package, PackageFeature } from "@/lib/types";
@@ -165,19 +166,29 @@ export default async function HomePage() {
         </div>
         <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { name: "Classic Rose", pkg: "Basic", accent: "from-brand-700 to-brand-900" },
-            { name: "Elegant Gold", pkg: "Premium", accent: "from-[#4a2f2a] to-[#241715]" },
-            { name: "Royal Luxury", pkg: "Luxury", accent: "from-[#1e3a34] to-[#0f1f1c]" },
-            { name: "Motion Bloom", pkg: "Motion", accent: "from-[#2a2444] to-[#161227]" },
-          ].map((t) => (
-            <div key={t.name} className="flex flex-col items-center">
-              <PhoneMockup accent={t.accent} />
-              <h3 className="mt-4 font-medium text-gray-900">{t.name}</h3>
-              <span className="mt-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs text-brand-600">
-                {t.pkg}
-              </span>
-            </div>
-          ))}
+            { name: "Classic Rose", pkg: "Basic", slug: "basic", accent: "from-brand-700 to-brand-900" },
+            { name: "Elegant Gold", pkg: "Premium", slug: "premium", accent: "from-[#4a2f2a] to-[#241715]" },
+            { name: "Royal Luxury", pkg: "Luxury", slug: "luxury", accent: "from-[#1e3a34] to-[#0f1f1c]" },
+            { name: "Motion Bloom", pkg: "Motion", slug: "motion", accent: "from-[#2a2444] to-[#161227]" },
+          ].map((t) => {
+            const tp = displayPkgs.find((p) => p.slug === t.slug);
+            const price = (tp as Package)?.discount_price ?? tp?.price ?? 0;
+            return (
+              <div key={t.name} className="flex flex-col items-center">
+                <PhoneMockup accent={t.accent} />
+                <h3 className="mt-4 font-medium text-gray-900">{t.name}</h3>
+                <span className="mt-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs text-brand-600">
+                  {t.pkg}
+                </span>
+                <AddToCartButton
+                  item={{ type: "package", refId: t.slug, name: `Paket ${t.pkg} — ${t.name}`, price }}
+                  goToCart
+                  label="Pesan Tema Ini"
+                  className="btn-outline mt-3 px-4 py-1.5 text-xs"
+                />
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -237,12 +248,17 @@ export default async function HomePage() {
                     ))}
                   </ul>
                 )}
-                <Link
-                  href={`/register?paket=${pkg.slug}`}
-                  className={highlighted ? "btn-primary mt-6" : "btn-outline mt-6"}
-                >
-                  Pilih {pkg.name}
-                </Link>
+                <AddToCartButton
+                  item={{
+                    type: "package",
+                    refId: pkg.slug,
+                    name: `Paket ${pkg.name}`,
+                    price: (pkg as Package).discount_price ?? pkg.price,
+                  }}
+                  goToCart
+                  label={`Pesan ${pkg.name}`}
+                  className={`mt-6 ${highlighted ? "btn-primary" : "btn-outline"}`}
+                />
               </div>
             );
           })}

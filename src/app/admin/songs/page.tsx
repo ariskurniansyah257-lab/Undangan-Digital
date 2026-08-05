@@ -1,14 +1,14 @@
-import ComingSoon from "@/components/ComingSoon";
+import { createClient } from "@/lib/supabase/server";
+import type { Song } from "@/lib/types";
+import SongsManager from "./SongsManager";
 
-export default function AdminSongsPage() {
+export default async function AdminSongsPage() {
+  const supabase = await createClient();
+  const { data } = await supabase.from("songs").select("*").order("created_at", { ascending: false });
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Lagu</h1>
-      <ComingSoon
-        phase="Fase 4"
-        title="Kelola daftar lagu"
-        description="Tambah/hapus lagu (judul, artis, URL) yang bisa dipilih client untuk latar undangan. Tabel & RLS sudah siap."
-      />
+      <h1 className="text-2xl font-bold text-gray-900">Kelola Lagu</h1>
+      <SongsManager initial={(data ?? []) as Song[]} />
     </div>
   );
 }
