@@ -31,6 +31,9 @@ export const DEMO_INVITATION: InvitationView = {
   mainDate: "2026-11-14",
   coupleTagline: "Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan pernikahan kami",
   hashtag: "#AndiraBerbima",
+  couplePhoto: null,
+  galleryMode: "normal",
+  videoUrl: null,
   closingMessage:
     "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu.",
   events: [

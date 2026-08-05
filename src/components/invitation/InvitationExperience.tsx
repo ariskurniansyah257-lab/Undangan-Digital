@@ -191,6 +191,14 @@ export default function InvitationExperience({
         <section className="px-6 py-16">
           <SectionTitle>Mempelai</SectionTitle>
           <p className="mb-10 text-center text-sm text-gray-500">{data.coupleTagline}</p>
+          {data.photoMode === "gabung" && data.couplePhoto && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={data.couplePhoto}
+              alt="Kedua mempelai"
+              className="mx-auto mb-10 w-full max-w-sm rounded-2xl object-cover shadow ring-4 ring-white"
+            />
+          )}
           <div className="space-y-10">
             {[data.groom, data.bride].map((p, i) => (
               <div key={i} className="flex flex-col items-center text-center">
@@ -278,19 +286,58 @@ export default function InvitationExperience({
 
         {/* GALERI */}
         {data.gallery.length > 0 && (
-          <section className="bg-brand-50/50 px-6 py-16">
-            <SectionTitle>Galeri</SectionTitle>
-            <div className="grid grid-cols-2 gap-3">
-              {data.gallery.map((g, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={i}
-                  src={g.imageUrl}
-                  alt={g.caption ?? ""}
-                  className="aspect-square w-full rounded-xl object-cover"
-                />
-              ))}
+          <section className="overflow-hidden bg-brand-50/50 py-16">
+            <div className="px-6">
+              <SectionTitle>Galeri</SectionTitle>
             </div>
+            {data.galleryMode === "slide" ? (
+              <div className="relative w-full overflow-hidden">
+                <div className="gallery-marquee px-3">
+                  {[...data.gallery, ...data.gallery].map((g, i) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={i}
+                      src={g.imageUrl}
+                      alt={g.caption ?? ""}
+                      className="h-56 w-40 flex-none rounded-xl object-cover"
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 px-6">
+                {data.gallery.map((g, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={i}
+                    src={g.imageUrl}
+                    alt={g.caption ?? ""}
+                    className="aspect-square w-full rounded-xl object-cover"
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* VIDEO */}
+        {data.videoUrl && (
+          <section className="px-6 py-16">
+            <SectionTitle>Video</SectionTitle>
+            {/youtube|youtu\.be/.test(data.videoUrl) ? (
+              <div className="aspect-video w-full overflow-hidden rounded-xl">
+                <iframe
+                  className="h-full w-full"
+                  src={data.videoUrl
+                    .replace("watch?v=", "embed/")
+                    .replace("youtu.be/", "www.youtube.com/embed/")}
+                  title="Video"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <video src={data.videoUrl} controls className="w-full rounded-xl" />
+            )}
           </section>
         )}
 

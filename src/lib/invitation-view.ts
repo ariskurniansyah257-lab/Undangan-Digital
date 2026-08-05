@@ -54,6 +54,9 @@ export interface InvitationView {
   coupleTagline: string | null;
   hashtag: string | null;
   closingMessage: string | null;
+  couplePhoto: string | null;
+  galleryMode: "normal" | "slide";
+  videoUrl: string | null;
   events: EventItem[];
   banks: BankItem[];
   gallery: GalleryItem[];

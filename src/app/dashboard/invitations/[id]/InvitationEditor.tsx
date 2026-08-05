@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { EVENT_TYPES } from "@/lib/constants";
 import { VERSE_PRESETS, RELIGIONS } from "@/lib/verses";
+import ImageUpload from "@/components/ImageUpload";
 import type { Invitation, Song, Package } from "@/lib/types";
 
 type Row = Record<string, any>;
@@ -183,8 +184,12 @@ export default function InvitationEditor({
         </div>
         {photoMode === "gabung" && (
           <div className="mb-4">
-            <label className="label">URL foto berdua</label>
-            <input className={input} value={couplePhoto} onChange={(e) => setCouplePhoto(e.target.value)} placeholder="https://..." />
+            <label className="label">Foto berdua</label>
+            <div className="flex gap-2">
+              <input className={input} value={couplePhoto} onChange={(e) => setCouplePhoto(e.target.value)} placeholder="URL foto atau upload" />
+              <ImageUpload onUploaded={setCouplePhoto} />
+            </div>
+            {couplePhoto && <p className="mt-1 truncate text-xs text-green-600">✓ {couplePhoto}</p>}
           </div>
         )}
         <div className="grid gap-6 sm:grid-cols-2">
@@ -196,7 +201,10 @@ export default function InvitationEditor({
               <input className={input} placeholder="Nama orang tua" value={p.parents} onChange={(e) => setP({ ...p, parents: e.target.value })} />
               <input className={input} placeholder="Instagram (tanpa @)" value={p.instagram} onChange={(e) => setP({ ...p, instagram: e.target.value })} />
               {photoMode === "pisah" && (
-                <input className={input} placeholder="URL foto" value={p.photo} onChange={(e) => setP({ ...p, photo: e.target.value })} />
+                <div className="flex gap-2">
+                  <input className={input} placeholder="URL foto" value={p.photo} onChange={(e) => setP({ ...p, photo: e.target.value })} />
+                  <ImageUpload onUploaded={(url) => setP({ ...p, photo: url })} />
+                </div>
               )}
             </div>
           ))}
@@ -346,8 +354,9 @@ export default function InvitationEditor({
         )}
         <div className="space-y-2">
           {gallery.map((g, i) => (
-            <div key={g.id} className="flex gap-2">
+            <div key={g.id} className="flex items-center gap-2">
               <input className={input} placeholder="URL foto" value={g.image_url ?? ""} onChange={(e) => updateChild("invitation_gallery", gallery, setGallery, i, { image_url: e.target.value })} />
+              <ImageUpload label="" onUploaded={(url) => updateChild("invitation_gallery", gallery, setGallery, i, { image_url: url })} />
               <button onClick={() => removeChild("invitation_gallery", gallery, setGallery, i)} className="text-sm text-red-500">Hapus</button>
             </div>
           ))}
@@ -362,7 +371,10 @@ export default function InvitationEditor({
       {/* VIDEO (Luxury/Motion) */}
       {allowVideo && (
         <Section title="Video" desc="Tersedia untuk paket Luxury & Motion.">
-          <input className={input} placeholder="URL video (YouTube/MP4)" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} />
+          <div className="flex gap-2">
+            <input className={input} placeholder="URL video (YouTube/MP4)" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} />
+            <ImageUpload label="Video" accept="video/*" onUploaded={setVideoUrl} />
+          </div>
         </Section>
       )}
 

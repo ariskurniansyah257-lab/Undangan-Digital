@@ -75,6 +75,9 @@ async function loadFromDb(slug: string): Promise<InvitationView | null> {
     coupleTagline: cfg.coupleTagline ?? null,
     hashtag: cfg.hashtag ?? null,
     closingMessage: cfg.closingMessage ?? "Terima kasih atas doa dan restunya.",
+    couplePhoto: cfg.couplePhoto ?? null,
+    galleryMode: cfg.galleryMode === "slide" ? "slide" : "normal",
+    videoUrl: cfg.videoUrl ?? null,
     events: (events ?? []).map(
       (e): EventItem => ({
         name: e.name,
