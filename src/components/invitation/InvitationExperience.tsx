@@ -194,9 +194,18 @@ export default function InvitationExperience({
           <div className="space-y-10">
             {[data.groom, data.bride].map((p, i) => (
               <div key={i} className="flex flex-col items-center text-center">
-                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-brand-100 to-gold-400/40 font-serif text-3xl text-brand-700 ring-4 ring-white shadow">
-                  {p.name.charAt(0)}
-                </div>
+                {p.photo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={p.photo}
+                    alt={p.name}
+                    className="h-28 w-28 rounded-full object-cover ring-4 ring-white shadow"
+                  />
+                ) : (
+                  <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-brand-100 to-gold-400/40 font-serif text-3xl text-brand-700 ring-4 ring-white shadow">
+                    {p.name.charAt(0)}
+                  </div>
+                )}
                 <h3 className="mt-4 font-serif text-2xl text-brand-800">{p.fullName || p.name}</h3>
                 {p.parents && <p className="mt-2 max-w-xs text-sm text-gray-500">{p.parents}</p>}
                 {p.instagram && (

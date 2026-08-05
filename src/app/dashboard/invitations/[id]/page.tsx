@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { EVENT_TYPES } from "@/lib/constants";
-import ComingSoon from "@/components/ComingSoon";
-import type { Invitation } from "@/lib/types";
+import InvitationEditor from "./InvitationEditor";
+import type { Invitation, Song, Package } from "@/lib/types";
 
 export default async function InvitationDetailPage({
   params,
@@ -13,50 +12,52 @@ export default async function InvitationDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data } = await supabase
+  const { data: inv } = await supabase
     .from("invitations")
     .select("*")
     .eq("id", id)
-    .single();
+    .maybeSingle();
+  if (!inv) notFound();
 
-  if (!data) notFound();
-  const inv = data as Invitation;
-  const eventLabel =
-    EVENT_TYPES.find((e) => e.value === inv.event_type)?.label ??
-    inv.event_type;
+  const [{ data: events }, { data: banks }, { data: story }, { data: gallery }, { data: songs }, pkgRes] =
+    await Promise.all([
+      supabase.from("invitation_events").select("*").eq("invitation_id", id).order("sort_order"),
+      supabase.from("invitation_banks").select("*").eq("invitation_id", id).order("sort_order"),
+      supabase.from("invitation_story").select("*").eq("invitation_id", id).order("sort_order"),
+      supabase.from("invitation_gallery").select("*").eq("invitation_id", id).order("sort_order"),
+      supabase.from("songs").select("*").eq("is_active", true).order("title"),
+      inv.package_id
+        ? supabase.from("packages").select("*").eq("id", inv.package_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <Link
-            href="/dashboard/invitations"
-            className="text-sm text-gray-500 hover:text-brand-600"
-          >
+          <Link href="/dashboard/invitations" className="text-sm text-gray-500 hover:text-brand-600">
             ← Kembali
           </Link>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">
-            {inv.title || "Tanpa judul"}
-          </h1>
-          <p className="text-gray-500">
-            {eventLabel} · /{inv.slug}
-          </p>
+          <h1 className="mt-1 text-2xl font-bold text-gray-900">Editor Undangan</h1>
         </div>
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-medium ${
-            inv.status === "published"
-              ? "bg-green-100 text-green-700"
-              : "bg-gray-100 text-gray-600"
-          }`}
-        >
-          {inv.status === "published" ? "Publik" : "Draft"}
-        </span>
+        <div className="flex gap-2">
+          <Link href={`/dashboard/invitations/${id}/guests`} className="btn-outline">
+            👥 Kelola Tamu
+          </Link>
+          <a href={`/u/${inv.slug}`} target="_blank" rel="noreferrer" className="btn-outline">
+            👁️ Pratinjau
+          </a>
+        </div>
       </div>
 
-      <ComingSoon
-        phase="Fase 2"
-        title="Editor undangan sedang dibangun"
-        description="Editor lengkap (data mempelai, rangkaian acara, ayat/kutipan, gift, galeri, our journey, lagu, dan manajemen tamu dengan auto-generate link) hadir di fase berikutnya. Struktur data & tabelnya sudah siap di database."
+      <InvitationEditor
+        invitation={inv as Invitation}
+        initialEvents={events ?? []}
+        initialBanks={banks ?? []}
+        initialStory={story ?? []}
+        initialGallery={gallery ?? []}
+        songs={(songs ?? []) as Song[]}
+        pkg={(pkgRes?.data as Package) ?? null}
       />
     </div>
   );
