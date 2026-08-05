@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getTheme } from "@/lib/themes";
 import { createGenerativeMusic, type MusicController } from "@/lib/music";
+import { OrnamentPattern, OrnamentCorner } from "./Ornament";
 import AddToCartButton from "@/components/AddToCartButton";
 import type { InvitationView } from "@/lib/invitation-view";
 
@@ -32,20 +33,6 @@ function useCountdown(targetIso: string | null) {
     minutes: Math.floor((diff / 60000) % 60),
     seconds: Math.floor((diff / 1000) % 60),
   };
-}
-
-function FloralCorner({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 120 120" className={className} aria-hidden fill="none">
-      <path d="M2 118C2 60 40 20 118 2" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-      <g fill="currentColor" opacity="0.6">
-        <circle cx="20" cy="90" r="5" /><circle cx="34" cy="70" r="7" /><circle cx="52" cy="52" r="6" />
-        <circle cx="72" cy="36" r="8" /><circle cx="94" cy="22" r="5" />
-        <path d="M34 70c-8-4-14 2-16 10 8 2 14-2 16-10z" />
-        <path d="M72 36c-4-8-12-8-18-4 4 7 12 8 18 4z" />
-      </g>
-    </svg>
-  );
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -129,6 +116,10 @@ export default function InvitationExperience({
       className="relative mx-auto min-h-screen max-w-lg overflow-hidden bg-[var(--body)] text-gray-700 shadow-2xl"
       style={cssVars}
     >
+      <OrnamentPattern
+        type={theme.ornament}
+        className="pointer-events-none absolute inset-0 -z-10 h-full w-full text-[color:var(--accent)] opacity-[0.07]"
+      />
       {data.songUrl && <audio ref={audioRef} src={data.songUrl} loop preload="auto" />}
 
       {previewMode && (
@@ -143,18 +134,22 @@ export default function InvitationExperience({
       {/* COVER */}
       <div
         className={`fixed inset-0 z-50 mx-auto flex max-w-lg flex-col items-center justify-center px-8 text-center transition-all duration-700 ${opened ? "pointer-events-none -translate-y-full opacity-0" : "opacity-100"}`}
-        style={{ background: `linear-gradient(rgba(0,0,0,0.35),rgba(0,0,0,0.55)), linear-gradient(160deg, ${theme.vars.coverFrom}, ${theme.vars.coverTo})` }}
+        style={{ background: `linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.6)), linear-gradient(160deg, ${theme.vars.coverFrom}, ${theme.vars.coverTo})` }}
       >
-        <FloralCorner className="absolute left-0 top-0 h-28 w-28 text-[color:var(--accent)]" />
-        <FloralCorner className="absolute bottom-0 right-0 h-28 w-28 rotate-180 text-[color:var(--accent)]" />
-        <p className="mb-3 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)]">The Wedding Of</p>
-        <h1 className="font-serif text-4xl text-white sm:text-5xl">{data.groom.name} &amp; {data.bride.name}</h1>
-        <div className="my-6 h-px w-16" style={{ background: theme.vars.accent, opacity: 0.6 }} />
-        <p className="text-sm text-white/70">Kepada Yth. Bapak/Ibu/Saudara/i</p>
-        <p className="mt-2 rounded-lg bg-white/10 px-5 py-2 font-serif text-xl text-white backdrop-blur">{guestName}</p>
-        <button onClick={handleOpen} className="mt-10 inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-105" style={{ background: theme.vars.accent }}>
-          ✉️ Buka Undangan
-        </button>
+        <OrnamentPattern type={theme.ornament} className="pointer-events-none absolute inset-0 text-[color:var(--accent)] opacity-[0.16]" />
+        <div className="pointer-events-none absolute inset-4 rounded-2xl border opacity-30" style={{ borderColor: theme.vars.accent }} />
+        <OrnamentCorner type={theme.ornament} className="absolute left-2 top-2 h-28 w-28 text-[color:var(--accent)]" />
+        <OrnamentCorner type={theme.ornament} className="absolute bottom-2 right-2 h-28 w-28 rotate-180 text-[color:var(--accent)]" />
+        <div className="relative z-10 flex flex-col items-center">
+          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)]">The Wedding Of</p>
+          <h1 className="font-serif text-4xl text-white sm:text-5xl">{data.groom.name} &amp; {data.bride.name}</h1>
+          <div className="my-6 h-px w-16" style={{ background: theme.vars.accent, opacity: 0.6 }} />
+          <p className="text-sm text-white/70">Kepada Yth. Bapak/Ibu/Saudara/i</p>
+          <p className="mt-2 rounded-lg bg-white/10 px-5 py-2 font-serif text-xl text-white backdrop-blur">{guestName}</p>
+          <button onClick={handleOpen} className="mt-10 inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-105" style={{ background: theme.vars.accent }}>
+            ✉️ Buka Undangan
+          </button>
+        </div>
       </div>
 
       {/* MUSIK */}
@@ -167,8 +162,8 @@ export default function InvitationExperience({
       {/* ISI */}
       <div className={opened ? "opacity-100" : "opacity-0"}>
         <section id="hero" className="relative flex min-h-screen flex-col items-center justify-center px-6 py-20 text-center">
-          <FloralCorner className="absolute left-0 top-0 h-24 w-24 text-[color:var(--accent)] opacity-40" />
-          <FloralCorner className="absolute bottom-0 right-0 h-24 w-24 rotate-180 text-[color:var(--accent)] opacity-40" />
+          <OrnamentCorner type={theme.ornament} className="absolute left-0 top-0 h-24 w-24 text-[color:var(--accent)] opacity-50" />
+          <OrnamentCorner type={theme.ornament} className="absolute bottom-0 right-0 h-24 w-24 rotate-180 text-[color:var(--accent)] opacity-50" />
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--accent)]">The Wedding Of</p>
           <h1 className="mt-4 font-serif text-5xl text-[color:var(--heading)]">{data.groom.name}</h1>
           <p className="my-2 font-serif text-2xl text-[color:var(--accent)]">&amp;</p>

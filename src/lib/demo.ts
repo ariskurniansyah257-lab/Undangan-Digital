@@ -29,8 +29,8 @@ export const DEMO_INVITATION: InvitationView = {
     "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang.",
   quoteSource: "Q.S. Ar-Rum : 21",
   photoMode: "pisah",
-  themeName: "Elegant Gold",
-  themeSlug: "elegant-gold",
+  themeName: "Artistik Ornamen",
+  themeSlug: "premium-artistik",
   songUrl: null,
   groom: {
     name: "Bimasena",
