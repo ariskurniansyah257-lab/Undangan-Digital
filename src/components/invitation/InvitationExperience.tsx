@@ -66,6 +66,8 @@ export default function InvitationExperience({
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const genRef = useRef<MusicController | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [activeId, setActiveId] = useState("hero");
   const cd = useCountdown(data.mainDate);
 
   useEffect(() => {
@@ -75,6 +77,22 @@ export default function InvitationExperience({
 
   // Bersihkan musik generatif saat unmount.
   useEffect(() => () => genRef.current?.dispose(), []);
+
+  // Lacak slide aktif untuk indikator titik & highlight bottom-nav.
+  useEffect(() => {
+    const root = scrollRef.current;
+    if (!root || !opened) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting && e.target.id) setActiveId(e.target.id);
+        });
+      },
+      { root, threshold: 0.55 },
+    );
+    root.querySelectorAll("section[id]").forEach((s) => obs.observe(s));
+    return () => obs.disconnect();
+  }, [opened]);
 
   async function startMusic() {
     if (data.songUrl && audioRef.current) {
@@ -111,6 +129,19 @@ export default function InvitationExperience({
     ...(data.gallery.length ? [{ id: "galeri", icon: "🖼️", label: "Galeri" }] : []),
     ...(data.banks.length ? [{ id: "gift", icon: "🎁", label: "Gift" }] : []),
     { id: "rsvp", icon: "✉️", label: "RSVP" },
+  ];
+
+  const slides = [
+    "hero",
+    ...(data.quoteText ? ["quote"] : []),
+    "mempelai",
+    "acara",
+    ...(data.story.length ? ["journey"] : []),
+    ...(data.gallery.length ? ["galeri"] : []),
+    ...(data.videoUrl ? ["video"] : []),
+    ...(data.banks.length ? ["gift"] : []),
+    "rsvp",
+    "closing",
   ];
 
   const cssVars = {
@@ -170,6 +201,7 @@ export default function InvitationExperience({
 
       {/* ISI — mode slide: tiap section satu layar, snap ke berikutnya */}
       <div
+        ref={scrollRef}
         className={`snap-slides h-[100dvh] overflow-y-scroll transition-opacity duration-500 ${
           opened ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
@@ -193,7 +225,7 @@ export default function InvitationExperience({
         </section>
 
         {data.quoteText && (
-          <section className="px-8 py-16 text-center" style={{ backgroundColor: tintBg }}>
+          <section id="quote" className="px-8 py-16 text-center" style={{ backgroundColor: tintBg }}>
             <p className="mx-auto max-w-md font-serif text-lg italic leading-relaxed text-gray-600">&ldquo;{data.quoteText}&rdquo;</p>
             {data.quoteSource && <p className="mt-4 text-sm font-semibold text-[color:var(--accent)]">({data.quoteSource})</p>}
           </section>
@@ -295,7 +327,7 @@ export default function InvitationExperience({
         )}
 
         {data.videoUrl && (
-          <section className="px-6 py-16">
+          <section id="video" className="px-6 py-16">
             <SectionTitle>Video</SectionTitle>
             {/youtube|youtu\.be/.test(data.videoUrl) ? (
               <div className="aspect-video w-full overflow-hidden rounded-xl">
@@ -320,7 +352,7 @@ export default function InvitationExperience({
           <RSVPBlock invitationId={previewMode ? null : data.id} defaultName={guestName} accent={theme.vars.accent} />
         </section>
 
-        <section className="px-6 py-20 pb-28 text-center">
+        <section id="closing" className="px-6 py-20 pb-28 text-center">
           <p className="mx-auto max-w-md text-sm leading-relaxed text-gray-600">{data.closingMessage}</p>
           <div className="my-8 mx-auto h-px w-16" style={{ background: theme.vars.accent, opacity: 0.6 }} />
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--accent)]">Wassalam</p>
@@ -330,16 +362,43 @@ export default function InvitationExperience({
         </section>
       </div>
 
+      {/* INDIKATOR TITIK SLIDE (kanan) */}
+      {opened && (
+        <div className="fixed right-2.5 top-1/2 z-40 flex -translate-y-1/2 flex-col items-center gap-2">
+          {slides.map((id) => (
+            <button
+              key={id}
+              onClick={() => jump(id)}
+              aria-label={`Ke bagian ${id}`}
+              className="rounded-full transition-all duration-300"
+              style={{
+                width: activeId === id ? 10 : 7,
+                height: activeId === id ? 10 : 7,
+                background: activeId === id ? theme.vars.accent : "rgba(0,0,0,0.18)",
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       {/* BOTTOM NAV */}
       {opened && (
         <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-lg border-t border-black/10 bg-white/95 px-2 py-1.5 backdrop-blur">
           <div className="flex items-center justify-around">
-            {navItems.map((n) => (
-              <button key={n.id} onClick={() => jump(n.id)} className="flex flex-1 flex-col items-center gap-0.5 rounded-lg py-1 text-gray-500 hover:text-[color:var(--heading)]">
-                <span className="text-lg leading-none">{n.icon}</span>
-                <span className="text-[10px]">{n.label}</span>
-              </button>
-            ))}
+            {navItems.map((n) => {
+              const on = activeId === n.id;
+              return (
+                <button
+                  key={n.id}
+                  onClick={() => jump(n.id)}
+                  className="flex flex-1 flex-col items-center gap-0.5 rounded-lg py-1 transition-colors"
+                  style={{ color: on ? theme.vars.heading : "#9ca3af" }}
+                >
+                  <span className={`text-lg leading-none transition-transform ${on ? "scale-125" : ""}`}>{n.icon}</span>
+                  <span className="text-[10px] font-medium">{n.label}</span>
+                </button>
+              );
+            })}
           </div>
         </nav>
       )}
