@@ -4,7 +4,8 @@ import PhoneMockup from "@/components/landing/PhoneMockup";
 import FaqAccordion from "@/components/landing/FaqAccordion";
 import WhatsappFloat from "@/components/landing/WhatsappFloat";
 import AddToCartButton from "@/components/AddToCartButton";
-import { THEMES } from "@/lib/themes";
+import SectionNav from "@/components/landing/SectionNav";
+import { themesByPackage } from "@/lib/themes";
 import { createClient } from "@/lib/supabase/server";
 import { EVENT_TYPES, formatIDR } from "@/lib/constants";
 import type { Package, PackageFeature } from "@/lib/types";
@@ -75,9 +76,10 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       <SiteHeader />
+      <SectionNav />
 
       {/* HERO */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-brand-50 via-white to-white">
+      <section id="beranda" className="relative overflow-hidden bg-gradient-to-b from-brand-50 via-white to-white">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
           <div>
             <span className="inline-block rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700">
@@ -165,27 +167,38 @@ export default async function HomePage() {
           <h2 className="font-serif text-3xl text-gray-900">Tema untuk setiap paket</h2>
           <p className="mt-2 text-gray-600">Klik <b>Preview</b> untuk melihat contoh sebelum memesan — tanpa perlu bayar.</p>
         </div>
-        <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {THEMES.map((t) => {
-            const tp = displayPkgs.find((p) => p.slug === t.packageSlug);
+        <div className="mt-10 space-y-14">
+          {themesByPackage().map((group) => {
+            const tp = displayPkgs.find((p) => p.slug === group.slug);
             const price = (tp as Package)?.discount_price ?? tp?.price ?? 0;
             return (
-              <div key={t.slug} className="flex flex-col items-center">
-                <Link href={`/preview/${t.slug}`} className="transition-transform hover:scale-105">
-                  <PhoneMockup from={t.vars.coverFrom} to={t.vars.coverTo} />
-                </Link>
-                <h3 className="mt-4 font-medium text-gray-900">{t.name}</h3>
-                <span className="mt-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs text-brand-600">
-                  {t.packageName}
-                </span>
-                <div className="mt-3 flex gap-2">
-                  <Link href={`/preview/${t.slug}`} className="btn-outline px-4 py-1.5 text-xs">👁️ Preview</Link>
-                  <AddToCartButton
-                    item={{ type: "package", refId: t.packageSlug, name: `Paket ${t.packageName} — ${t.name}`, price }}
-                    goToCart
-                    label="Pesan"
-                    className="btn-primary px-4 py-1.5 text-xs"
-                  />
+              <div key={group.slug}>
+                <div className="mb-6 flex items-center justify-center gap-3">
+                  <span className="h-px w-8 bg-gray-200" />
+                  <h3 className="text-lg font-bold text-gray-900">Paket {group.name}</h3>
+                  <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs text-brand-600">
+                    {group.themes.length} tema
+                  </span>
+                  <span className="h-px w-8 bg-gray-200" />
+                </div>
+                <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+                  {group.themes.map((t) => (
+                    <div key={t.slug} className="flex flex-col items-center">
+                      <Link href={`/preview/${t.slug}`} className="transition-transform hover:scale-105">
+                        <PhoneMockup from={t.vars.coverFrom} to={t.vars.coverTo} />
+                      </Link>
+                      <h4 className="mt-4 font-medium text-gray-900">{t.name}</h4>
+                      <div className="mt-3 flex gap-2">
+                        <Link href={`/preview/${t.slug}`} className="btn-outline px-3 py-1.5 text-xs">👁️ Preview</Link>
+                        <AddToCartButton
+                          item={{ type: "package", refId: group.slug, name: `Paket ${group.name} — ${t.name}`, price }}
+                          goToCart
+                          label="Pesan"
+                          className="btn-primary px-3 py-1.5 text-xs"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             );

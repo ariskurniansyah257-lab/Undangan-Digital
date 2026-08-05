@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getTheme } from "@/lib/themes";
+import { createGenerativeMusic, type MusicController } from "@/lib/music";
 import AddToCartButton from "@/components/AddToCartButton";
 import type { InvitationView } from "@/lib/invitation-view";
 
@@ -68,6 +69,7 @@ export default function InvitationExperience({
   const [opened, setOpened] = useState(false);
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const genRef = useRef<MusicController | null>(null);
   const cd = useCountdown(data.mainDate);
 
   useEffect(() => {
@@ -75,16 +77,32 @@ export default function InvitationExperience({
     return () => { document.body.style.overflow = ""; };
   }, [opened]);
 
+  // Bersihkan musik generatif saat unmount.
+  useEffect(() => () => genRef.current?.dispose(), []);
+
+  async function startMusic() {
+    if (data.songUrl && audioRef.current) {
+      await audioRef.current.play().catch(() => {});
+    } else {
+      if (!genRef.current) genRef.current = createGenerativeMusic();
+      await genRef.current?.start();
+    }
+    setPlaying(true);
+  }
+  function stopMusic() {
+    if (data.songUrl) audioRef.current?.pause();
+    else genRef.current?.stop();
+    setPlaying(false);
+  }
+
   function handleOpen() {
     setOpened(true);
-    audioRef.current?.play().then(() => setPlaying(true)).catch(() => {});
+    startMusic();
     window.scrollTo({ top: 0 });
   }
   function toggleMusic() {
-    const a = audioRef.current;
-    if (!a) return;
-    if (playing) { a.pause(); setPlaying(false); }
-    else a.play().then(() => setPlaying(true)).catch(() => {});
+    if (playing) stopMusic();
+    else startMusic();
   }
   function jump(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -140,7 +158,7 @@ export default function InvitationExperience({
       </div>
 
       {/* MUSIK */}
-      {opened && data.songUrl && (
+      {opened && (
         <button onClick={toggleMusic} className="fixed bottom-20 right-5 z-40 flex h-11 w-11 items-center justify-center rounded-full text-white shadow-lg" style={{ background: theme.vars.accent }} aria-label="Musik">
           <span className={playing ? "animate-spin-slow" : ""}>{playing ? "♫" : "▶"}</span>
         </button>
@@ -177,15 +195,17 @@ export default function InvitationExperience({
           <SectionTitle>Mempelai</SectionTitle>
           <p className="mb-10 text-center text-sm text-gray-500">{data.coupleTagline}</p>
           {data.photoMode === "gabung" && data.couplePhoto && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={data.couplePhoto} alt="Kedua mempelai" className="mx-auto mb-10 w-full max-w-sm rounded-2xl object-cover shadow ring-4 ring-white" />
+            <div className="mx-auto mb-10 w-full max-w-sm overflow-hidden rounded-2xl shadow ring-4 ring-white">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={data.couplePhoto} alt="Kedua mempelai" className="kenburns w-full object-cover" />
+            </div>
           )}
           <div className="space-y-10">
             {[data.groom, data.bride].map((p, i) => (
               <div key={i} className="flex flex-col items-center text-center">
                 {p.photo ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.photo} alt={p.name} className="h-28 w-28 rounded-full object-cover ring-4 ring-white shadow" />
+                  <img src={p.photo} alt={p.name} className="photo-float h-28 w-28 rounded-full object-cover ring-4 ring-white shadow" />
                 ) : (
                   <div className="flex h-28 w-28 items-center justify-center rounded-full font-serif text-3xl text-white ring-4 ring-white shadow" style={{ background: theme.vars.accent }}>
                     {p.name.charAt(0)}
@@ -247,8 +267,10 @@ export default function InvitationExperience({
             ) : (
               <div className="grid grid-cols-2 gap-3 px-6">
                 {data.gallery.map((g, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={i} src={g.imageUrl} alt={g.caption ?? ""} className="aspect-square w-full rounded-xl object-cover" />
+                  <div key={i} className="aspect-square overflow-hidden rounded-xl">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={g.imageUrl} alt={g.caption ?? ""} className="kenburns h-full w-full object-cover" />
+                  </div>
                 ))}
               </div>
             )}
