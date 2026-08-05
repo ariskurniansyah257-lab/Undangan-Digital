@@ -58,6 +58,12 @@ drop policy if exists "profiles_update_own" on public.profiles;
 create policy "profiles_update_own" on public.profiles
   for update using (id = auth.uid()) with check (id = auth.uid());
 
+-- Izinkan user membuat baris profilnya sendiri (fallback bila trigger
+-- auth.users tidak dapat dipasang karena keterbatasan hak akses).
+drop policy if exists "profiles_insert_own" on public.profiles;
+create policy "profiles_insert_own" on public.profiles
+  for insert with check (id = auth.uid());
+
 drop policy if exists "profiles_admin_all" on public.profiles;
 create policy "profiles_admin_all" on public.profiles
   for all using (public.is_super_admin()) with check (public.is_super_admin());
@@ -82,10 +88,20 @@ begin
 end;
 $$;
 
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute function public.handle_new_user();
+-- Pasang trigger di auth.users. Pada sebagian proyek Supabase, role postgres
+-- tidak boleh membuat trigger di auth.users ("must be owner of relation users").
+-- Bungkus agar kegagalan izin TIDAK menggagalkan seluruh migrasi — aplikasi
+-- akan membuat profil sebagai fallback (lihat policy profiles_insert_own).
+do $$
+begin
+  drop trigger if exists on_auth_user_created on auth.users;
+  create trigger on_auth_user_created
+    after insert on auth.users
+    for each row execute function public.handle_new_user();
+exception
+  when insufficient_privilege then
+    raise notice 'Trigger auth.users dilewati (hak akses tidak cukup). Profil akan dibuat dari aplikasi.';
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- PACKAGES — Basic, Premium, Luxury, Motion

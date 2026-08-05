@@ -57,6 +57,22 @@ function RegisterForm() {
       }
     }
 
+    // Fallback: pastikan baris profil ada meski trigger DB tidak terpasang.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from("profiles").upsert(
+        {
+          id: user.id,
+          full_name: fullName.trim(),
+          email: email.trim(),
+          phone: phone.trim() || null,
+        },
+        { onConflict: "id" },
+      );
+    }
+
     const target = paket ? `/dashboard?paket=${paket}` : "/dashboard";
     router.push(target);
     router.refresh();

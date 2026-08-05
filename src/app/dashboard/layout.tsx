@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SidebarNav, { type NavItem } from "@/components/SidebarNav";
 import SignOutButton from "@/components/SignOutButton";
-import type { Profile } from "@/lib/types";
+import { ensureProfile } from "@/lib/profile";
 
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "Ringkasan", icon: "🏠" },
@@ -24,13 +24,7 @@ export default async function DashboardLayout({
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
-  const p = profile as Profile | null;
+  const p = await ensureProfile(supabase, user);
   const isAdmin = p?.role === "admin" || p?.role === "sub_admin";
 
   return (
