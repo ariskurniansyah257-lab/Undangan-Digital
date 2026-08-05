@@ -13,6 +13,7 @@ export const DEMO_INVITATION: InvitationView = {
   quoteSource: "Q.S. Ar-Rum : 21",
   photoMode: "pisah",
   themeName: "Elegant Gold",
+  themeSlug: "elegant-gold",
   songUrl: null,
   groom: {
     name: "Bimasena",

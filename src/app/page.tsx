@@ -4,6 +4,7 @@ import PhoneMockup from "@/components/landing/PhoneMockup";
 import FaqAccordion from "@/components/landing/FaqAccordion";
 import WhatsappFloat from "@/components/landing/WhatsappFloat";
 import AddToCartButton from "@/components/AddToCartButton";
+import { THEMES } from "@/lib/themes";
 import { createClient } from "@/lib/supabase/server";
 import { EVENT_TYPES, formatIDR } from "@/lib/constants";
 import type { Package, PackageFeature } from "@/lib/types";
@@ -162,30 +163,30 @@ export default async function HomePage() {
       <section id="tema" className="mx-auto max-w-6xl px-4 py-16">
         <div className="text-center">
           <h2 className="font-serif text-3xl text-gray-900">Tema untuk setiap paket</h2>
-          <p className="mt-2 text-gray-600">Dari klasik elegan hingga animasi bergerak.</p>
+          <p className="mt-2 text-gray-600">Klik <b>Preview</b> untuk melihat contoh sebelum memesan — tanpa perlu bayar.</p>
         </div>
-        <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { name: "Classic Rose", pkg: "Basic", slug: "basic", accent: "from-brand-700 to-brand-900" },
-            { name: "Elegant Gold", pkg: "Premium", slug: "premium", accent: "from-[#4a2f2a] to-[#241715]" },
-            { name: "Royal Luxury", pkg: "Luxury", slug: "luxury", accent: "from-[#1e3a34] to-[#0f1f1c]" },
-            { name: "Motion Bloom", pkg: "Motion", slug: "motion", accent: "from-[#2a2444] to-[#161227]" },
-          ].map((t) => {
-            const tp = displayPkgs.find((p) => p.slug === t.slug);
+        <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {THEMES.map((t) => {
+            const tp = displayPkgs.find((p) => p.slug === t.packageSlug);
             const price = (tp as Package)?.discount_price ?? tp?.price ?? 0;
             return (
-              <div key={t.name} className="flex flex-col items-center">
-                <PhoneMockup accent={t.accent} />
+              <div key={t.slug} className="flex flex-col items-center">
+                <Link href={`/preview/${t.slug}`} className="transition-transform hover:scale-105">
+                  <PhoneMockup from={t.vars.coverFrom} to={t.vars.coverTo} />
+                </Link>
                 <h3 className="mt-4 font-medium text-gray-900">{t.name}</h3>
                 <span className="mt-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs text-brand-600">
-                  {t.pkg}
+                  {t.packageName}
                 </span>
-                <AddToCartButton
-                  item={{ type: "package", refId: t.slug, name: `Paket ${t.pkg} — ${t.name}`, price }}
-                  goToCart
-                  label="Pesan Tema Ini"
-                  className="btn-outline mt-3 px-4 py-1.5 text-xs"
-                />
+                <div className="mt-3 flex gap-2">
+                  <Link href={`/preview/${t.slug}`} className="btn-outline px-4 py-1.5 text-xs">👁️ Preview</Link>
+                  <AddToCartButton
+                    item={{ type: "package", refId: t.packageSlug, name: `Paket ${t.packageName} — ${t.name}`, price }}
+                    goToCart
+                    label="Pesan"
+                    className="btn-primary px-4 py-1.5 text-xs"
+                  />
+                </div>
               </div>
             );
           })}

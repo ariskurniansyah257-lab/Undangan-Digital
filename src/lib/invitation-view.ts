@@ -46,6 +46,7 @@ export interface InvitationView {
   quoteSource: string | null;
   photoMode: "gabung" | "pisah";
   themeName: string | null;
+  themeSlug: string | null;
   songUrl: string | null;
   // konten dari config jsonb
   groom: PersonProfile;

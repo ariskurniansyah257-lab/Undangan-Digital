@@ -45,7 +45,7 @@ async function loadFromDb(slug: string): Promise<InvitationView | null> {
     .maybeSingle();
   if (!inv) return null;
 
-  const [{ data: events }, { data: banks }, { data: gallery }, { data: story }, song] =
+  const [{ data: events }, { data: banks }, { data: gallery }, { data: story }, song, themeRow] =
     await Promise.all([
       supabase.from("invitation_events").select("*").eq("invitation_id", inv.id).order("sort_order"),
       supabase.from("invitation_banks").select("*").eq("invitation_id", inv.id).order("sort_order"),
@@ -53,6 +53,9 @@ async function loadFromDb(slug: string): Promise<InvitationView | null> {
       supabase.from("invitation_story").select("*").eq("invitation_id", inv.id).order("sort_order"),
       inv.song_id
         ? supabase.from("songs").select("url").eq("id", inv.song_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      inv.theme_id
+        ? supabase.from("themes").select("slug").eq("id", inv.theme_id).maybeSingle()
         : Promise.resolve({ data: null }),
     ]);
 
@@ -68,6 +71,7 @@ async function loadFromDb(slug: string): Promise<InvitationView | null> {
     quoteSource: inv.quote_source,
     photoMode: inv.photo_mode,
     themeName: null,
+    themeSlug: (themeRow?.data as { slug?: string } | null)?.slug ?? null,
     songUrl: (song?.data as { url?: string } | null)?.url ?? null,
     groom: cfg.groom ?? { name: "Mempelai Pria" },
     bride: cfg.bride ?? { name: "Mempelai Wanita" },
@@ -121,7 +125,7 @@ export default async function PublicInvitationPage({
 
   return (
     <div className="min-h-screen bg-[#241715]">
-      <InvitationExperience data={data} guestName={guestName} />
+      <InvitationExperience data={data} guestName={guestName} themeSlug={data.themeSlug} />
     </div>
   );
 }
