@@ -1,8 +1,31 @@
 -- =============================================================================
 -- Undangan Digital SaaS — Skema inti
 -- Menjalankan: salin ke Supabase SQL Editor lalu Run, atau `supabase db push`.
--- Idempotent sedapat mungkin (IF NOT EXISTS / DROP POLICY IF EXISTS).
+-- Idempotent: dapat dijalankan berkali-kali dengan hasil sama.
 -- =============================================================================
+
+-- ---------------------------------------------------------------------------
+-- RESET (idempotent) — bersihkan objek yang DIKELOLA migrasi ini terlebih
+-- dahulu, agar sisa dari percobaan yang gagal sebelumnya (mis. tabel setengah
+-- jadi tanpa kolom tertentu) tidak menyebabkan "create table if not exists"
+-- melewatinya dan memicu error kolom saat membuat policy.
+--
+-- ⚠️  Menghapus tabel di bawah beserta ISINYA. AMAN untuk proyek baru yang
+--     belum punya data. Bila kelak sudah ada data produksi, hapus/komentari
+--     blok RESET ini sebelum menjalankan migrasi.
+-- ---------------------------------------------------------------------------
+drop table if exists
+  public.rsvps, public.guests, public.invitation_story,
+  public.invitation_gallery, public.invitation_banks, public.invitation_events,
+  public.invitations, public.order_items, public.orders, public.banks_admin,
+  public.site_settings, public.products, public.songs, public.package_features,
+  public.themes, public.packages, public.profiles
+  cascade;
+
+drop function if exists public.is_admin() cascade;
+drop function if exists public.is_super_admin() cascade;
+drop function if exists public.handle_new_user() cascade;
+drop function if exists public.enforce_child_limit() cascade;
 
 -- ---------------------------------------------------------------------------
 -- PROFILES — memperluas auth.users
