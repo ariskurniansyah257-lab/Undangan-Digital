@@ -5,6 +5,21 @@
 -- =============================================================================
 
 -- ---------------------------------------------------------------------------
+-- PROFILES — memperluas auth.users
+-- Dibuat PALING AWAL agar fungsi helper di bawah (yang mereferensikannya)
+-- lolos validasi body saat pembuatan.
+-- ---------------------------------------------------------------------------
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  full_name text not null default '',
+  email text,
+  phone text,
+  role text not null default 'client' check (role in ('client', 'admin', 'sub_admin')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------------
 -- Helper: cek role admin/sub_admin tanpa memicu rekursi RLS di tabel profiles.
 -- ---------------------------------------------------------------------------
 create or replace function public.is_admin()
@@ -32,19 +47,6 @@ as $$
     where id = auth.uid() and role = 'admin'
   );
 $$;
-
--- ---------------------------------------------------------------------------
--- PROFILES — memperluas auth.users
--- ---------------------------------------------------------------------------
-create table if not exists public.profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
-  full_name text not null default '',
-  email text,
-  phone text,
-  role text not null default 'client' check (role in ('client', 'admin', 'sub_admin')),
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
 
 alter table public.profiles enable row level security;
 
