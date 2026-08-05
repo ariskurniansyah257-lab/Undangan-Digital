@@ -1,9 +1,5 @@
 export const EVENT_TYPES = [
   { value: "wedding", label: "Pernikahan" },
-  { value: "aqiqah", label: "Aqiqah" },
-  { value: "khitanan", label: "Khitanan" },
-  { value: "ulang_tahun", label: "Ulang Tahun" },
-  { value: "seminar", label: "Seminar / Sidang Skripsi" },
 ] as const;
 
 export type EventType = (typeof EVENT_TYPES)[number]["value"];

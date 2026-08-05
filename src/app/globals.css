@@ -11,6 +11,11 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Agar lompatan anchor tidak tertutup header sticky */
+section[id] {
+  scroll-margin-top: 72px;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);

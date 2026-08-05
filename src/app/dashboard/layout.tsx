@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SidebarNav, { type NavItem } from "@/components/SidebarNav";
 import SignOutButton from "@/components/SignOutButton";
+import DashboardMobileNav from "@/components/DashboardMobileNav";
 import { ensureProfile } from "@/lib/profile";
 
 const NAV: NavItem[] = [
@@ -53,13 +54,20 @@ export default async function DashboardLayout({
       </aside>
 
       <main className="flex-1 overflow-x-hidden">
-        <div className="border-b border-gray-200 bg-white px-4 py-3 md:hidden">
+        <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 md:hidden">
           <Link href="/" className="text-lg font-bold text-brand-600">
             Undangan<span className="font-light text-gray-800">Digital</span>
           </Link>
+          {isAdmin && (
+            <Link href="/admin" className="rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white">
+              🛡️ Admin
+            </Link>
+          )}
         </div>
-        <div className="mx-auto max-w-5xl p-4 sm:p-8">{children}</div>
+        <div className="mx-auto max-w-5xl p-4 pb-24 sm:p-8 md:pb-8">{children}</div>
       </main>
+
+      <DashboardMobileNav items={NAV} />
     </div>
   );
 }
