@@ -204,23 +204,32 @@ export default function InvitationExperience({
               <img src={data.couplePhoto} alt="Kedua mempelai" className="kenburns w-full object-cover" />
             </div>
           )}
-          <div className="space-y-10">
-            {[data.groom, data.bride].map((p, i) => (
-              <div key={i} className="flex flex-col items-center text-center">
-                {p.photo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.photo} alt={p.name} className="photo-float h-28 w-28 rounded-full object-cover ring-4 ring-white shadow" />
-                ) : (
-                  <div className="flex h-28 w-28 items-center justify-center rounded-full font-serif text-3xl text-white ring-4 ring-white shadow" style={{ background: theme.vars.accent }}>
-                    {p.name.charAt(0)}
-                  </div>
-                )}
-                <h3 className="mt-4 font-serif text-2xl text-[color:var(--heading)]">{p.fullName || p.name}</h3>
-                {p.parents && <p className="mt-2 max-w-xs text-sm text-gray-500">{p.parents}</p>}
-                {p.instagram && <a href={`https://instagram.com/${p.instagram}`} className="mt-2 inline-flex items-center gap-1 text-sm text-[color:var(--accent)]">@{p.instagram}</a>}
-                {i === 0 && <p className="mt-8 font-serif text-3xl text-[color:var(--accent)]">&amp;</p>}
-              </div>
-            ))}
+          <div className="relative">
+            <div className="grid grid-cols-2 gap-3 sm:gap-5">
+              {[data.groom, data.bride].map((p, i) => (
+                <div key={i} className="flex flex-col items-center text-center">
+                  {p.photo ? (
+                    <div className="w-full overflow-hidden rounded-2xl shadow ring-2 ring-white">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.photo} alt={p.name} className="aspect-[4/5] w-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="flex aspect-[4/5] w-full items-center justify-center rounded-2xl font-serif text-4xl text-white shadow ring-2 ring-white" style={{ background: theme.vars.accent }}>
+                      {p.name.charAt(0)}
+                    </div>
+                  )}
+                  <h3 className="mt-3 font-serif text-lg leading-tight text-[color:var(--heading)]">{p.fullName || p.name}</h3>
+                  {p.parents && <p className="mt-1.5 text-xs leading-snug text-gray-500">{p.parents}</p>}
+                  {p.instagram && <a href={`https://instagram.com/${p.instagram}`} className="mt-1.5 text-xs text-[color:var(--accent)]">@{p.instagram}</a>}
+                </div>
+              ))}
+            </div>
+            <span
+              className="absolute left-1/2 top-[30%] flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white font-serif text-2xl shadow ring-1 ring-black/5"
+              style={{ color: theme.vars.accent }}
+            >
+              &amp;
+            </span>
           </div>
         </section>
 

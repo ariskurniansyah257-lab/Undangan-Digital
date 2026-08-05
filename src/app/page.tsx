@@ -2,9 +2,8 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import PhoneMockup from "@/components/landing/PhoneMockup";
 import FaqAccordion from "@/components/landing/FaqAccordion";
-import WhatsappFloat from "@/components/landing/WhatsappFloat";
 import AddToCartButton from "@/components/AddToCartButton";
-import SectionNav from "@/components/landing/SectionNav";
+import HomeBottomNav from "@/components/landing/HomeBottomNav";
 import { themesByPackage } from "@/lib/themes";
 import { createClient } from "@/lib/supabase/server";
 import { EVENT_TYPES, formatIDR } from "@/lib/constants";
@@ -76,7 +75,6 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       <SiteHeader />
-      <SectionNav />
 
       {/* HERO */}
       <section id="beranda" className="relative overflow-hidden bg-gradient-to-b from-brand-50 via-white to-white">
@@ -181,20 +179,20 @@ export default async function HomePage() {
                   </span>
                   <span className="h-px w-8 bg-gray-200" />
                 </div>
-                <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
                   {group.themes.map((t) => (
                     <div key={t.slug} className="flex flex-col items-center">
                       <Link href={`/preview/${t.slug}`} className="transition-transform hover:scale-105">
-                        <PhoneMockup from={t.vars.coverFrom} to={t.vars.coverTo} />
+                        <PhoneMockup compact from={t.vars.coverFrom} to={t.vars.coverTo} />
                       </Link>
-                      <h4 className="mt-4 font-medium text-gray-900">{t.name}</h4>
-                      <div className="mt-3 flex gap-2">
-                        <Link href={`/preview/${t.slug}`} className="btn-outline px-3 py-1.5 text-xs">👁️ Preview</Link>
+                      <h4 className="mt-2 text-sm font-medium text-gray-900">{t.name}</h4>
+                      <div className="mt-2 flex gap-1.5">
+                        <Link href={`/preview/${t.slug}`} className="btn-outline px-2.5 py-1 text-[11px]">👁️ Preview</Link>
                         <AddToCartButton
                           item={{ type: "package", refId: group.slug, name: `Paket ${group.name} — ${t.name}`, price }}
                           goToCart
                           label="Pesan"
-                          className="btn-primary px-3 py-1.5 text-xs"
+                          className="btn-primary px-2.5 py-1 text-[11px]"
                         />
                       </div>
                     </div>
@@ -362,7 +360,8 @@ export default async function HomePage() {
         </p>
       </footer>
 
-      <WhatsappFloat number={whatsapp} />
+      <div className="h-16" />
+      <HomeBottomNav whatsapp={whatsapp} />
     </div>
   );
 }
