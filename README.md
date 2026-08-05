@@ -50,11 +50,42 @@ lini masa, serta daftar rekening hadiah.
 Elemen bertanda `data-bind="..."` pada HTML terisi otomatis dari `CONFIG`,
 jadi cukup ubah `CONFIG` dan seluruh halaman ikut menyesuaikan.
 
+## Supabase (Database)
+
+RSVP dan ucapan disimpan secara terpusat di Supabase, sehingga semua tamu
+dapat melihat ucapan satu sama lain.
+
+### Setup
+
+1. Buat proyek baru di [supabase.com](https://supabase.com) (atau gunakan yang sudah ada).
+2. Jalankan SQL migration di **SQL Editor** Supabase:
+   - Buka file `supabase/migrations/20260805_create_wishes.sql`
+   - Salin isinya ke SQL Editor, lalu klik **Run**
+3. Salin **Project URL** dan **anon public key** dari
+   Settings → API di dashboard Supabase.
+4. Buka `index.html`, cari baris berikut, lalu ganti:
+   ```js
+   const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+   const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+   ```
+
+### Keamanan
+
+Tabel `wishes` menggunakan Row Level Security (RLS):
+- **SELECT**: siapa pun boleh membaca
+- **INSERT**: siapa pun boleh mengirim ucapan
+- Tidak ada akses UPDATE/DELETE dari sisi klien
+
+## Vercel (Deployment)
+
+Proyek ini siap di-deploy ke Vercel sebagai situs statis.
+
+1. Hubungkan repo GitHub ini ke [vercel.com](https://vercel.com).
+2. Vercel akan otomatis mendeteksi konfigurasi dari `vercel.json`.
+3. Setiap push ke branch utama akan otomatis di-deploy.
+
 ## Catatan teknis
 
-- **RSVP dan ucapan** disimpan di `localStorage` browser masing-masing tamu,
-  sehingga hanya terlihat oleh tamu itu sendiri. Untuk mengumpulkan data secara
-  terpusat diperlukan backend atau layanan formulir.
 - **Musik latar** dibangkitkan secara generatif oleh Web Audio API, bukan berkas
   MP3, sehingga bebas masalah hak cipta. Cara menggantinya dengan lagu sendiri
   dijelaskan pada komentar di dekat kode musik.
