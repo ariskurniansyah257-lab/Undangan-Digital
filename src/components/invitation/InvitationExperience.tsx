@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getTheme } from "@/lib/themes";
 import { createGenerativeMusic, type MusicController } from "@/lib/music";
 import { OrnamentPattern, OrnamentCorner } from "./Ornament";
+import QrButton from "./QrButton";
 import AddToCartButton from "@/components/AddToCartButton";
 import type { InvitationView } from "@/lib/invitation-view";
 
@@ -203,6 +204,7 @@ export default function InvitationExperience({
           <span className={playing ? "animate-spin-slow" : ""}>{playing ? "♫" : "▶"}</span>
         </button>
       )}
+      {opened && <QrButton accent={theme.vars.accent} />}
 
       {/* ISI — mode slide: tiap section satu layar, snap ke berikutnya */}
       <div

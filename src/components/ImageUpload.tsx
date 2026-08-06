@@ -2,8 +2,9 @@
 
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { uploadImage } from "@/lib/upload";
 
-/** Tombol upload gambar ke bucket 'invitations', mengembalikan URL publik. */
+/** Tombol upload gambar (Storage bila aktif, atau fallback data URI). */
 export default function ImageUpload({
   onUploaded,
   label = "Upload",
@@ -24,30 +25,8 @@ export default function ImageUpload({
     setErr(null);
     try {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setErr("Sesi berakhir, silakan masuk lagi.");
-        return;
-      }
-      const safe = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-      const path = `${user.id}/${Date.now()}-${safe}`;
-      const { error } = await supabase.storage
-        .from("invitations")
-        .upload(path, file, { upsert: true, contentType: file.type });
-      if (error) {
-        // Pesan spesifik agar mudah didiagnosis.
-        const msg = /bucket/i.test(error.message)
-          ? "Bucket 'invitations' belum ada di Supabase Storage. Jalankan migrasi storage."
-          : /row-level security|policy/i.test(error.message)
-            ? "Ditolak oleh kebijakan Storage. Aktifkan policy upload (lihat panduan)."
-            : error.message;
-        setErr(msg);
-        return;
-      }
-      const { data } = supabase.storage.from("invitations").getPublicUrl(path);
-      onUploaded(data.publicUrl);
+      const { url } = await uploadImage(supabase, file);
+      onUploaded(url);
     } catch (e: any) {
       setErr(e?.message ?? "Gagal mengunggah.");
     } finally {

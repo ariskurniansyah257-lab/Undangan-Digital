@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { uploadImage } from "@/lib/upload";
 import { formatIDR, ORDER_STATUS, type OrderStatus } from "@/lib/constants";
 import type { BankAdmin } from "@/lib/types";
 
@@ -35,14 +36,14 @@ export default function OrderPayment({
     if (!file) return;
     setUploading(true);
     setMsg(null);
-    const path = `${order.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
-    const { error: upErr } = await supabase.storage.from("payments").upload(path, file, { upsert: true });
-    if (upErr) {
+    let url: string;
+    try {
+      const res = await uploadImage(supabase, file, "payments");
+      url = res.url;
+    } catch (err: any) {
       setUploading(false);
-      return setMsg(`Gagal unggah: ${upErr.message}`);
+      return setMsg(`Gagal unggah: ${err?.message ?? "coba lagi"}`);
     }
-    const { data: pub } = supabase.storage.from("payments").getPublicUrl(path);
-    const url = pub.publicUrl;
     await supabase
       .from("orders")
       .update({ payment_proof_url: url, status: "diproses" })
