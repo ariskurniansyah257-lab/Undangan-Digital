@@ -46,10 +46,22 @@ export default function CartPage() {
       return setError(oErr?.message ?? "Gagal membuat pesanan.");
     }
 
+    // Untuk item paket, refId = slug paket → petakan ke package_id agar
+    // pembelian paket tercatat (dipakai untuk kuota 1 paket = 1 undangan).
+    const pkgSlugs = items.filter((i) => i.type === "package").map((i) => i.refId);
+    let slugToId: Record<string, string> = {};
+    if (pkgSlugs.length) {
+      const { data: pkgs } = await supabase
+        .from("packages")
+        .select("id, slug")
+        .in("slug", pkgSlugs);
+      slugToId = Object.fromEntries((pkgs ?? []).map((p) => [p.slug, p.id]));
+    }
+
     const rows = items.map((i) => ({
       order_id: order.id,
       product_id: i.type === "product" ? i.refId : null,
-      package_id: null,
+      package_id: i.type === "package" ? slugToId[i.refId] ?? null : null,
       name: i.name,
       price: i.price,
       qty: i.qty,
