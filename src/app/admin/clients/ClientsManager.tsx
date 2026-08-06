@@ -17,6 +17,16 @@ export default function ClientsManager({
   const supabase = createClient();
   const [sel, setSel] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState<string | null>(null);
+  const [q, setQ] = useState("");
+
+  const term = q.trim().toLowerCase();
+  const filtered = term
+    ? profiles.filter((p) =>
+        [p.full_name, p.email, p.phone]
+          .filter(Boolean)
+          .some((v) => (v as string).toLowerCase().includes(term)),
+      )
+    : profiles;
 
   async function assign(p: Profile) {
     const pkgId = sel[p.id] || packages[0]?.id;
@@ -40,6 +50,20 @@ export default function ClientsManager({
         Beri paket manual dengan membuatkan draft undangan berpaket untuk klien.
         (Pembuatan akun baru butuh akses server/service-role dan dilakukan terpisah.)
       </p>
+      <div className="relative max-w-sm">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+        <input
+          className="input pl-9"
+          placeholder="Cari nama, email, atau telepon…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+        {term && (
+          <span className="mt-1 block text-xs text-gray-400">
+            {filtered.length} dari {profiles.length} akun cocok
+          </span>
+        )}
+      </div>
       <div className="card overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="border-b border-gray-100 bg-gray-50 text-left text-gray-500">
@@ -53,7 +77,7 @@ export default function ClientsManager({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {profiles.map((p) => (
+            {filtered.map((p) => (
               <tr key={p.id}>
                 <td className="px-4 py-3 font-medium text-gray-900">{p.full_name || "—"}</td>
                 <td className="px-4 py-3 text-gray-600">{p.email}</td>
@@ -76,8 +100,10 @@ export default function ClientsManager({
                 </td>
               </tr>
             ))}
-            {profiles.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Belum ada akun.</td></tr>
+            {filtered.length === 0 && (
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">
+                {profiles.length === 0 ? "Belum ada akun." : "Tidak ada akun yang cocok."}
+              </td></tr>
             )}
           </tbody>
         </table>

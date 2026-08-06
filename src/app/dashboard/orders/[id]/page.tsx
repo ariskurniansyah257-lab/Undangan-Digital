@@ -19,18 +19,18 @@ export default async function OrderDetailPage({
     .maybeSingle();
   if (!order) notFound();
 
-  const { data: banks } = await supabase
-    .from("banks_admin")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order");
+  const [{ data: banks }, { data: qrisRow }] = await Promise.all([
+    supabase.from("banks_admin").select("*").eq("is_active", true).order("sort_order"),
+    supabase.from("site_settings").select("value").eq("key", "qris_image").maybeSingle(),
+  ]);
+  const qrisImage = (qrisRow?.value as string | undefined) || null;
 
   return (
     <div className="space-y-6">
       <Link href="/dashboard/orders" className="text-sm text-gray-500 hover:text-brand-600">
         ← Pesanan
       </Link>
-      <OrderPayment order={order} banks={(banks ?? []) as BankAdmin[]} />
+      <OrderPayment order={order} banks={(banks ?? []) as BankAdmin[]} qrisImage={qrisImage} />
     </div>
   );
 }

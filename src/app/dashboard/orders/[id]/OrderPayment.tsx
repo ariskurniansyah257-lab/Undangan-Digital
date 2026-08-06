@@ -19,9 +19,11 @@ type OrderRow = {
 export default function OrderPayment({
   order,
   banks,
+  qrisImage,
 }: {
   order: OrderRow;
   banks: BankAdmin[];
+  qrisImage?: string | null;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -30,6 +32,7 @@ export default function OrderPayment({
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [qrisZoom, setQrisZoom] = useState(false);
 
   async function onUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -114,18 +117,31 @@ export default function OrderPayment({
               <div key={b.id} className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
                 <div>
                   <p className="text-sm font-medium text-gray-800">{b.bank_name}</p>
-                  <p className="font-mono text-sm">{b.account_number} · a.n. {b.account_name}</p>
+                  <p className="font-mono text-sm">{b.account_number}</p>
+                  <p className="text-xs text-gray-500">a.n. {b.account_name}</p>
                 </div>
                 <button
                   onClick={() => { navigator.clipboard?.writeText(b.account_number); setCopied(b.id); setTimeout(() => setCopied(null), 1500); }}
-                  className="btn-outline px-3 py-1.5 text-xs"
+                  className="btn-outline shrink-0 px-3 py-1.5 text-xs"
                 >
-                  {copied === b.id ? "✓" : "Salin"}
+                  {copied === b.id ? "✓ Tersalin" : "📋 Salin No. Rek"}
                 </button>
               </div>
             ))}
             {banks.length === 0 && <p className="text-sm text-gray-400">Rekening belum tersedia.</p>}
           </div>
+
+          {/* QRIS */}
+          {qrisImage && (
+            <div className="mt-4 rounded-lg border border-gray-100 p-4 text-center">
+              <p className="text-sm font-medium text-gray-800">Atau scan QRIS</p>
+              <button type="button" onClick={() => setQrisZoom(true)} className="mt-2 inline-block">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={qrisImage} alt="QRIS" className="mx-auto h-48 w-48 rounded-lg border object-contain" />
+                <span className="mt-1 block text-[11px] text-brand-600">🔍 Ketuk untuk perbesar</span>
+              </button>
+            </div>
+          )}
 
           <div className="mt-5">
             <label className="label">Unggah bukti pembayaran</label>
@@ -147,6 +163,23 @@ export default function OrderPayment({
       {status === "berhasil" && (
         <div className="rounded-lg bg-green-50 p-4 text-center text-green-700">
           🎉 Pembayaran berhasil diverifikasi. Terima kasih!
+        </div>
+      )}
+
+      {qrisZoom && qrisImage && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setQrisZoom(false)}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={qrisImage} alt="QRIS" className="max-h-[90vh] max-w-full rounded-lg bg-white p-2 shadow-2xl" />
+          <button
+            type="button"
+            onClick={() => setQrisZoom(false)}
+            className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-1 text-sm font-medium"
+          >
+            ✕ Tutup
+          </button>
         </div>
       )}
     </div>

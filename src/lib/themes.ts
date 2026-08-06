@@ -3,15 +3,41 @@
 
 export type OrnamentType = "jawa" | "padang" | "ceria" | "modern" | "artistik";
 
-// Jenis animasi transisi antar-slide undangan (seperti transisi PPT).
-export type AnimationType = "fade" | "morph" | "ppt" | "zoom" | "flip";
+// Jenis animasi transisi antar-slide undangan — meniru transisi PowerPoint.
+export type AnimationType =
+  | "fade"
+  | "morph"
+  | "ppt"
+  | "push"
+  | "wipe"
+  | "split"
+  | "reveal"
+  | "cover"
+  | "dissolve"
+  | "zoom"
+  | "flip"
+  | "cube"
+  | "fall"
+  | "blinds"
+  | "shape";
 
+// Dikelompokkan seperti tab transisi di PowerPoint (Subtle / Exciting).
 export const ANIMATIONS: { value: AnimationType; label: string }[] = [
-  { value: "fade", label: "Fade Up (lembut naik)" },
+  { value: "fade", label: "Fade (halus)" },
   { value: "morph", label: "Morph (skala + blur)" },
-  { value: "ppt", label: "Slide PPT (geser samping)" },
+  { value: "push", label: "Push (dorong dari bawah)" },
+  { value: "ppt", label: "Slide (geser dari samping)" },
+  { value: "wipe", label: "Wipe (usap terbuka)" },
+  { value: "split", label: "Split (buka dari tengah)" },
+  { value: "reveal", label: "Reveal (singkap naik)" },
+  { value: "cover", label: "Cover (tutup dari atas)" },
+  { value: "dissolve", label: "Dissolve (larut)" },
   { value: "zoom", label: "Zoom (membesar)" },
   { value: "flip", label: "Flip (putar 3D)" },
+  { value: "cube", label: "Cube (kubus 3D)" },
+  { value: "fall", label: "Fall Over (rebah)" },
+  { value: "blinds", label: "Blinds (kerai)" },
+  { value: "shape", label: "Shape (lingkaran membesar)" },
 ];
 
 export interface ThemeVars {
@@ -36,6 +62,7 @@ export interface ThemeStyle {
 export interface ThemeConfigOverride {
   vars?: Partial<ThemeVars>;
   ornament?: OrnamentType;
+  ornamentImage?: string | null; // ornamen kustom (gambar) yang diunggah admin
   animation?: AnimationType;
   coverImage?: string | null;
 }
@@ -44,6 +71,7 @@ export interface ThemeConfigOverride {
 export interface ResolvedTheme extends ThemeStyle {
   animation: AnimationType;
   coverImage: string | null;
+  ornamentImage: string | null;
 }
 
 interface Concept {
@@ -130,6 +158,7 @@ export function resolveTheme(
     vars: { ...base.vars, ...(cfg.vars ?? {}) },
     animation: cfg.animation ?? "fade",
     coverImage: cfg.coverImage ?? null,
+    ornamentImage: cfg.ornamentImage ?? null,
   };
 }
 

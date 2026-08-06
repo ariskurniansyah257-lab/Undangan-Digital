@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { EVENT_TYPES } from "@/lib/constants";
 import { VERSE_PRESETS, RELIGIONS } from "@/lib/verses";
+import { CLOSING_PRESETS } from "@/lib/closings";
 import ImageUpload from "@/components/ImageUpload";
+import ImageField from "@/components/ImageField";
 import type { Invitation, Song, Package } from "@/lib/types";
 
 type Row = Record<string, any>;
@@ -189,11 +191,7 @@ export default function InvitationEditor({
         {(photoMode === "gabung" || photoMode === "tiga") && (
           <div className="mb-4">
             <label className="label">Foto berdua (gabung)</label>
-            <div className="flex gap-2">
-              <input className={input} value={couplePhoto} onChange={(e) => setCouplePhoto(e.target.value)} placeholder="URL foto atau upload" />
-              <ImageUpload onUploaded={setCouplePhoto} />
-            </div>
-            {couplePhoto && <p className="mt-1 truncate text-xs text-green-600">✓ {couplePhoto}</p>}
+            <ImageField value={couplePhoto} onChange={setCouplePhoto} label="foto berdua" />
           </div>
         )}
         <div className="grid gap-6 sm:grid-cols-2">
@@ -212,9 +210,9 @@ export default function InvitationEditor({
               </div>
               <input className={input} placeholder="Instagram (tanpa @)" value={p.instagram} onChange={(e) => setP({ ...p, instagram: e.target.value })} />
               {(photoMode === "pisah" || photoMode === "tiga") && (
-                <div className="flex gap-2">
-                  <input className={input} placeholder="URL foto" value={p.photo} onChange={(e) => setP({ ...p, photo: e.target.value })} />
-                  <ImageUpload onUploaded={(url) => setP({ ...p, photo: url })} />
+                <div>
+                  <label className="mb-1 block text-xs text-gray-500">Foto mempelai {lbl.toLowerCase()}</label>
+                  <ImageField value={p.photo} onChange={(url) => setP({ ...p, photo: url })} label="foto" />
                 </div>
               )}
             </div>
@@ -280,7 +278,17 @@ export default function InvitationEditor({
 
           <div>
             <label className="label">Pesan penutup</label>
-            <textarea className={`${input} min-h-[70px]`} value={closingMessage} onChange={(e) => setClosingMessage(e.target.value)} />
+            <select
+              className={`${input} mb-2`}
+              value=""
+              onChange={(e) => { if (e.target.value) setClosingMessage(e.target.value); }}
+            >
+              <option value="">— Pilih preset kata penutup (bisa diedit) —</option>
+              {CLOSING_PRESETS.map((c, i) => (
+                <option key={i} value={c}>{c.slice(0, 60)}…</option>
+              ))}
+            </select>
+            <textarea className={`${input} min-h-[70px]`} value={closingMessage} onChange={(e) => setClosingMessage(e.target.value)} placeholder="Tulis atau pilih preset kata penutup di atas" />
           </div>
         </div>
       </Section>
@@ -377,9 +385,12 @@ export default function InvitationEditor({
         )}
         <div className="space-y-2">
           {gallery.map((g, i) => (
-            <div key={g.id} className="flex items-center gap-2">
-              <input className={input} placeholder="URL foto" value={g.image_url ?? ""} onChange={(e) => updateChild("invitation_gallery", gallery, setGallery, i, { image_url: e.target.value })} />
-              <ImageUpload label="" onUploaded={(url) => updateChild("invitation_gallery", gallery, setGallery, i, { image_url: url })} />
+            <div key={g.id} className="flex items-center justify-between gap-2 rounded-lg border border-gray-100 p-2">
+              <ImageField
+                value={g.image_url}
+                onChange={(url) => updateChild("invitation_gallery", gallery, setGallery, i, { image_url: url })}
+                label={`foto ${i + 1}`}
+              />
               <button onClick={() => removeChild("invitation_gallery", gallery, setGallery, i)} className="text-sm text-red-500">Hapus</button>
             </div>
           ))}

@@ -10,7 +10,7 @@ import {
   type AnimationType,
   type ThemeVars,
 } from "@/lib/themes";
-import ImageUpload from "@/components/ImageUpload";
+import ImageField from "@/components/ImageField";
 import PhoneMockup from "@/components/landing/PhoneMockup";
 import type { Theme, Package } from "@/lib/types";
 
@@ -66,9 +66,9 @@ export default function ThemesManager({ initial, packages }: { initial: Theme[];
             {packages.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
           <input className="input" placeholder="Deskripsi" value={description} onChange={(e) => setDescription(e.target.value)} />
-          <div className="flex gap-2">
-            <input className="input" placeholder="URL preview" value={preview} onChange={(e) => setPreview(e.target.value)} />
-            <ImageUpload onUploaded={setPreview} />
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">Preview:</span>
+            <ImageField value={preview} onChange={setPreview} label="preview" />
           </div>
         </div>
         <button onClick={add} className="btn-primary w-fit">+ Tambah</button>
@@ -103,12 +103,19 @@ function ThemeCard({
   const [ornament, setOrnament] = useState<OrnamentType>(eff.ornament);
   const [animation, setAnimation] = useState<AnimationType>(eff.animation);
   const [coverImage, setCoverImage] = useState<string>(eff.coverImage ?? "");
+  const [ornamentImage, setOrnamentImage] = useState<string>(eff.ornamentImage ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   async function save() {
     setSaving(true);
-    const config = { vars, ornament, animation, coverImage: coverImage || null };
+    const config = {
+      vars,
+      ornament,
+      ornamentImage: ornamentImage || null,
+      animation,
+      coverImage: coverImage || null,
+    };
     const { error } = await supabase.from("themes").update({ config }).eq("id", theme.id);
     setSaving(false);
     if (!error) {
@@ -161,27 +168,32 @@ function ThemeCard({
           {/* Ornamen + animasi */}
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="label">Ornamen latar</label>
+              <label className="label">Ornamen latar (motif bawaan)</label>
               <select className="input" value={ornament} onChange={(e) => setOrnament(e.target.value as OrnamentType)}>
                 {ORNAMENTS.map((o) => <option key={o} value={o}>{o}</option>)}
               </select>
             </div>
             <div>
-              <label className="label">Animasi transisi (seperti PPT)</label>
+              <label className="label">Animasi transisi (seperti PowerPoint)</label>
               <select className="input" value={animation} onChange={(e) => setAnimation(e.target.value as AnimationType)}>
                 {ANIMATIONS.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
               </select>
             </div>
           </div>
 
+          {/* Ornamen kustom (unggah sendiri) */}
+          <div>
+            <label className="label">Ornamen kustom (unggah gambar, opsional)</label>
+            <p className="mb-1.5 text-xs text-gray-500">
+              Bila diunggah, motif ini menggantikan ornamen bawaan sebagai latar berulang.
+            </p>
+            <ImageField value={ornamentImage} onChange={setOrnamentImage} label="ornamen" />
+          </div>
+
           {/* Gambar cover */}
           <div>
             <label className="label">Gambar cover (opsional)</label>
-            <div className="flex gap-2">
-              <input className="input" placeholder="URL gambar cover" value={coverImage} onChange={(e) => setCoverImage(e.target.value)} />
-              <ImageUpload onUploaded={setCoverImage} />
-            </div>
-            {coverImage && <p className="mt-1 truncate text-xs text-green-600">✓ {coverImage}</p>}
+            <ImageField value={coverImage} onChange={setCoverImage} label="cover" />
           </div>
 
           <div className="flex items-center gap-3">

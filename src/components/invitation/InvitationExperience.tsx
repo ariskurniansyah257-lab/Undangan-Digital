@@ -189,10 +189,18 @@ export default function InvitationExperience({
       className="relative mx-auto min-h-screen max-w-lg overflow-hidden bg-[var(--body)] text-gray-700 shadow-2xl"
       style={cssVars}
     >
-      <OrnamentPattern
-        type={theme.ornament}
-        className="pointer-events-none absolute inset-0 -z-10 h-full w-full text-[color:var(--heading)] opacity-[0.13]"
-      />
+      {theme.ornamentImage ? (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-[0.13]"
+          style={{ backgroundImage: `url(${theme.ornamentImage})`, backgroundRepeat: "repeat", backgroundSize: "180px" }}
+        />
+      ) : (
+        <OrnamentPattern
+          type={theme.ornament}
+          className="pointer-events-none absolute inset-0 -z-10 h-full w-full text-[color:var(--heading)] opacity-[0.13]"
+        />
+      )}
       {data.songUrl && <audio ref={audioRef} src={data.songUrl} loop preload="auto" />}
 
       {previewMode && (

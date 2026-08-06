@@ -25,6 +25,7 @@ const NEXT: Record<string, OrderStatus[]> = {
 export default function PaymentsManager({ initial }: { initial: OrderRow[] }) {
   const supabase = createClient();
   const [orders, setOrders] = useState(initial);
+  const [zoom, setZoom] = useState<string | null>(null);
 
   async function setStatus(o: OrderRow, status: OrderStatus) {
     setOrders(orders.map((x) => (x.id === o.id ? { ...x, status } : x)));
@@ -61,14 +62,26 @@ export default function PaymentsManager({ initial }: { initial: OrderRow[] }) {
             </span>
           </div>
 
+          {/* Bukti bayar: tampil inline (thumbnail) + klik untuk perbesar.
+              Tidak memakai link agar bukti berformat data-URI tetap terlihat. */}
+          {o.payment_proof_url ? (
+            <div className="mt-3">
+              <p className="mb-1 text-xs font-medium text-gray-600">Bukti bayar:</p>
+              <button type="button" onClick={() => setZoom(o.payment_proof_url)} className="block">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={o.payment_proof_url}
+                  alt="Bukti bayar"
+                  className="h-40 w-auto max-w-full rounded-lg border object-contain"
+                />
+                <span className="mt-1 block text-[11px] text-brand-600">🔍 Klik untuk perbesar</span>
+              </button>
+            </div>
+          ) : (
+            <p className="mt-3 text-xs text-gray-400">Belum ada bukti bayar</p>
+          )}
+
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            {o.payment_proof_url ? (
-              <a href={o.payment_proof_url} target="_blank" rel="noreferrer" className="btn-outline px-3 py-1.5 text-xs">
-                🧾 Lihat Bukti Bayar
-              </a>
-            ) : (
-              <span className="text-xs text-gray-400">Belum ada bukti bayar</span>
-            )}
             {NEXT[o.status]?.map((s) => (
               <button
                 key={s}
@@ -83,6 +96,23 @@ export default function PaymentsManager({ initial }: { initial: OrderRow[] }) {
           </div>
         </div>
       ))}
+
+      {zoom && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setZoom(null)}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={zoom} alt="Bukti bayar" className="max-h-[90vh] max-w-full rounded-lg shadow-2xl" />
+          <button
+            type="button"
+            onClick={() => setZoom(null)}
+            className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-1 text-sm font-medium"
+          >
+            ✕ Tutup
+          </button>
+        </div>
+      )}
     </div>
   );
 }

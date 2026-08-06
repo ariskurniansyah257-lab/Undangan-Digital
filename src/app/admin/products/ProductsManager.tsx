@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatIDR } from "@/lib/constants";
-import ImageUpload from "@/components/ImageUpload";
+import ImageField from "@/components/ImageField";
 import type { Product, Package } from "@/lib/types";
 
 export default function ProductsManager({ initial, packages }: { initial: Product[]; packages: Package[] }) {
@@ -51,9 +51,9 @@ export default function ProductsManager({ initial, packages }: { initial: Produc
         <div className="grid gap-2 sm:grid-cols-2">
           <input className="input" placeholder="Nama produk" value={name} onChange={(e) => setName(e.target.value)} />
           <input className="input" placeholder="Harga (angka)" value={price} onChange={(e) => setPrice(e.target.value)} />
-          <div className="flex gap-2">
-            <input className="input" placeholder="URL gambar" value={image} onChange={(e) => setImage(e.target.value)} />
-            <ImageUpload onUploaded={setImage} />
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">Gambar:</span>
+            <ImageField value={image} onChange={setImage} label="gambar" />
           </div>
           <select className="input" value={packageId} onChange={(e) => setPackageId(e.target.value)}>
             <option value="">— Tanpa paket (umum) —</option>

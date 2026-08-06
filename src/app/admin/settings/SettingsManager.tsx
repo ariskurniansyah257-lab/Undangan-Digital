@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import ImageField from "@/components/ImageField";
 import type { BankAdmin, Profile } from "@/lib/types";
 
 export default function SettingsManager({
@@ -16,6 +17,7 @@ export default function SettingsManager({
   const supabase = createClient();
   const [whatsapp, setWhatsapp] = useState(settings.whatsapp_number ?? "");
   const [siteName, setSiteName] = useState(settings.site_name ?? "");
+  const [qris, setQris] = useState(settings.qris_image ?? "");
   const [banks, setBanks] = useState(initialBanks);
   const [people, setPeople] = useState(profiles);
   const [msg, setMsg] = useState<string | null>(null);
@@ -89,6 +91,25 @@ export default function SettingsManager({
           <input className="input" placeholder="Atas nama" value={bAcc} onChange={(e) => setBAcc(e.target.value)} />
         </div>
         <button onClick={addBank} className="btn-outline w-fit">+ Tambah Rekening</button>
+
+        {/* QRIS */}
+        <div className="mt-4 border-t border-gray-100 pt-4">
+          <label className="label">Gambar QRIS</label>
+          <p className="mb-2 text-xs text-gray-500">
+            Unggah foto QRIS. Akan tampil di halaman pembayaran klien untuk discan.
+          </p>
+          <ImageField
+            value={qris}
+            label="QRIS"
+            onChange={(url) => { setQris(url); saveSetting("qris_image", url); }}
+          />
+          {qris && (
+            <div className="mt-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={qris} alt="QRIS" className="h-40 w-40 rounded-lg border object-contain" />
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Sub-admin */}

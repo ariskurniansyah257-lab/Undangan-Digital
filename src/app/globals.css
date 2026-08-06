@@ -60,13 +60,18 @@ section[id] {
 .snap-slides > section.in-view > *:nth-child(4) {
   animation-delay: 0.24s;
 }
-/* --- Varian animasi transisi slide (dipilih admin per tema) --- */
+/* --- Varian animasi transisi slide (dipilih admin per tema) —
+       meniru transisi PowerPoint --- */
 @keyframes morph-in {
   from { opacity: 0; transform: scale(0.9); filter: blur(8px); }
   to { opacity: 1; transform: none; filter: blur(0); }
 }
 @keyframes ppt-in {
   from { opacity: 0; transform: translateX(60px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes push-in {
+  from { opacity: 0; transform: translateY(48px); }
   to { opacity: 1; transform: none; }
 }
 @keyframes zoom-in {
@@ -77,10 +82,66 @@ section[id] {
   from { opacity: 0; transform: perspective(900px) rotateY(35deg); }
   to { opacity: 1; transform: perspective(900px) rotateY(0); }
 }
+@keyframes wipe-in {
+  from { opacity: 0; clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+@keyframes split-in {
+  from { opacity: 0; clip-path: inset(0 50% 0 50%); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+@keyframes reveal-in {
+  from { opacity: 0; clip-path: inset(100% 0 0 0); transform: translateY(20px); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); transform: none; }
+}
+@keyframes cover-in {
+  from { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateY(-20px); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); transform: none; }
+}
+@keyframes dissolve-in {
+  0% { opacity: 0; filter: blur(6px) contrast(1.4); }
+  60% { opacity: 0.6; }
+  100% { opacity: 1; filter: blur(0) contrast(1); }
+}
+@keyframes cube-in {
+  from { opacity: 0; transform: perspective(1000px) rotateY(-70deg); transform-origin: left center; }
+  to { opacity: 1; transform: perspective(1000px) rotateY(0); transform-origin: left center; }
+}
+@keyframes fall-in {
+  from { opacity: 0; transform: perspective(1000px) rotateX(50deg); transform-origin: top center; }
+  to { opacity: 1; transform: perspective(1000px) rotateX(0); transform-origin: top center; }
+}
+@keyframes blinds-in {
+  from {
+    opacity: 0;
+    -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0, #000 6px, transparent 6px, transparent 12px);
+    mask-image: repeating-linear-gradient(to bottom, #000 0, #000 6px, transparent 6px, transparent 12px);
+  }
+  to {
+    opacity: 1;
+    -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0, #000 12px, transparent 12px, transparent 12px);
+    mask-image: repeating-linear-gradient(to bottom, #000 0, #000 12px, transparent 12px, transparent 12px);
+  }
+}
+@keyframes shape-in {
+  from { opacity: 0.2; clip-path: circle(0% at 50% 50%); }
+  to { opacity: 1; clip-path: circle(140% at 50% 50%); }
+}
+
 .snap-slides[data-anim="morph"] > section.in-view > * { animation-name: morph-in; animation-duration: 0.7s; }
 .snap-slides[data-anim="ppt"] > section.in-view > * { animation-name: ppt-in; }
+.snap-slides[data-anim="push"] > section.in-view > * { animation-name: push-in; }
 .snap-slides[data-anim="zoom"] > section.in-view > * { animation-name: zoom-in; animation-duration: 0.8s; }
 .snap-slides[data-anim="flip"] > section.in-view > * { animation-name: flip-in; animation-duration: 0.8s; }
+.snap-slides[data-anim="wipe"] > section.in-view > * { animation-name: wipe-in; animation-duration: 0.7s; }
+.snap-slides[data-anim="split"] > section.in-view > * { animation-name: split-in; animation-duration: 0.7s; }
+.snap-slides[data-anim="reveal"] > section.in-view > * { animation-name: reveal-in; animation-duration: 0.7s; }
+.snap-slides[data-anim="cover"] > section.in-view > * { animation-name: cover-in; animation-duration: 0.7s; }
+.snap-slides[data-anim="dissolve"] > section.in-view > * { animation-name: dissolve-in; animation-duration: 0.9s; }
+.snap-slides[data-anim="cube"] > section.in-view > * { animation-name: cube-in; animation-duration: 0.85s; }
+.snap-slides[data-anim="fall"] > section.in-view > * { animation-name: fall-in; animation-duration: 0.8s; }
+.snap-slides[data-anim="blinds"] > section.in-view > * { animation-name: blinds-in; animation-duration: 0.8s; }
+.snap-slides[data-anim="shape"] > section.in-view > * { animation-name: shape-in; animation-duration: 0.9s; }
 
 @media (prefers-reduced-motion: reduce) {
   .snap-slides > section.in-view > * {

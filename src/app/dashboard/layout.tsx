@@ -9,6 +9,7 @@ import { ensureProfile } from "@/lib/profile";
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "Ringkasan", icon: "🏠" },
   { href: "/dashboard/invitations", label: "Undangan Saya", icon: "💌" },
+  { href: "/dashboard/products", label: "Produk", icon: "🛍️" },
   { href: "/dashboard/orders", label: "Pesanan", icon: "🧾" },
   { href: "/dashboard/settings", label: "Akun", icon: "⚙️" },
 ];
