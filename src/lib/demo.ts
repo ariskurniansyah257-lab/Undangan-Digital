@@ -15,6 +15,7 @@ export const DEMO_INVITATION: InvitationView = {
   photoMode: "pisah",
   themeName: "Artistik Ornamen",
   themeSlug: "premium-artistik",
+  themeConfig: null,
   songUrl: null,
   groom: {
     name: "Bimasena",

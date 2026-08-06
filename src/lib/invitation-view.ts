@@ -32,6 +32,9 @@ export interface PersonProfile {
   name: string;
   fullName?: string;
   parents?: string;
+  fatherName?: string;
+  motherName?: string;
+  childOrder?: string; // mis. "Putra pertama", "Putri kedua"
   instagram?: string;
   photo?: string | null;
 }
@@ -44,9 +47,10 @@ export interface InvitationView {
   status: "draft" | "published";
   quoteText: string | null;
   quoteSource: string | null;
-  photoMode: "gabung" | "pisah";
+  photoMode: "gabung" | "pisah" | "tiga";
   themeName: string | null;
   themeSlug: string | null;
+  themeConfig: Record<string, unknown> | null; // override admin (warna/animasi/cover)
   songUrl: string | null;
   // konten dari config jsonb
   groom: PersonProfile;

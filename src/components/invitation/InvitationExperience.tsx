@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { getTheme } from "@/lib/themes";
+import { resolveTheme } from "@/lib/themes";
+import type { PersonProfile } from "@/lib/invitation-view";
 import { createGenerativeMusic, type MusicController } from "@/lib/music";
 import { OrnamentPattern, OrnamentCorner } from "./Ornament";
 import QrButton from "./QrButton";
@@ -17,6 +18,30 @@ function formatDateID(iso: string | null): string {
   const d = new Date(iso + "T00:00:00");
   if (isNaN(d.getTime())) return iso;
   return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/** Hanya bulan & tahun (untuk Our Journey). Menerima "YYYY-MM" atau "YYYY-MM-DD". */
+function formatMonthYearID(iso: string | null): string {
+  if (!iso) return "";
+  const m = iso.match(/^(\d{4})-(\d{2})/);
+  if (!m) return iso;
+  const month = Number(m[2]) - 1;
+  if (month < 0 || month > 11) return iso;
+  return `${MONTHS[month]} ${m[1]}`;
+}
+
+/** Baris "Putra/Putri dari Bapak … & Ibu …". Fallback ke field lama `parents`. */
+function parentLine(p: PersonProfile, isGroom: boolean): string {
+  const father = (p.fatherName ?? "").trim();
+  const mother = (p.motherName ?? "").trim();
+  if (father || mother) {
+    const anak = p.childOrder?.trim() || (isGroom ? "Putra" : "Putri");
+    const ortu = [father && `Bapak ${father}`, mother && `Ibu ${mother}`]
+      .filter(Boolean)
+      .join(" & ");
+    return `${anak} dari ${ortu}`;
+  }
+  return (p.parents ?? "").trim();
 }
 
 function useCountdown(targetIso: string | null) {
@@ -52,16 +77,18 @@ export default function InvitationExperience({
   data,
   guestName,
   themeSlug,
+  themeConfig,
   previewMode = false,
   orderItem,
 }: {
   data: InvitationView;
   guestName: string;
   themeSlug?: string | null;
+  themeConfig?: Record<string, unknown> | null;
   previewMode?: boolean;
   orderItem?: { type: "package"; refId: string; name: string; price: number };
 }) {
-  const theme = getTheme(themeSlug);
+  const theme = resolveTheme(themeSlug, themeConfig ?? data.themeConfig);
   const tintBg = hexToRgba(theme.vars.tint, 0.5);
   const [opened, setOpened] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -179,8 +206,12 @@ export default function InvitationExperience({
 
       {/* COVER */}
       <div
-        className={`fixed inset-0 z-50 mx-auto flex max-w-lg flex-col items-center justify-center px-8 text-center transition-all duration-700 ${opened ? "pointer-events-none -translate-y-full opacity-0" : "opacity-100"}`}
-        style={{ background: `linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.6)), linear-gradient(160deg, ${theme.vars.coverFrom}, ${theme.vars.coverTo})` }}
+        className={`fixed inset-0 z-50 mx-auto flex max-w-lg flex-col items-center justify-center bg-cover bg-center px-8 text-center transition-all duration-700 ${opened ? "pointer-events-none -translate-y-full opacity-0" : "opacity-100"}`}
+        style={{
+          background: theme.coverImage
+            ? `linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.65)), url(${theme.coverImage}) center/cover no-repeat`
+            : `linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.6)), linear-gradient(160deg, ${theme.vars.coverFrom}, ${theme.vars.coverTo})`,
+        }}
       >
         <OrnamentPattern type={theme.ornament} className="pointer-events-none absolute inset-0 text-[color:var(--accent)] opacity-[0.16]" />
         <div className="pointer-events-none absolute inset-4 rounded-2xl border opacity-30" style={{ borderColor: theme.vars.accent }} />
@@ -209,6 +240,7 @@ export default function InvitationExperience({
       {/* ISI — mode slide: tiap section satu layar, snap ke berikutnya */}
       <div
         ref={scrollRef}
+        data-anim={theme.animation}
         className={`snap-slides h-[100dvh] overflow-y-scroll transition-opacity duration-500 ${
           opened ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
@@ -241,7 +273,8 @@ export default function InvitationExperience({
         <section id="mempelai" className="px-6 py-16">
           <SectionTitle>Mempelai</SectionTitle>
           <p className="mb-10 text-center text-sm text-gray-500">{data.coupleTagline}</p>
-          {data.photoMode === "gabung" && data.couplePhoto && (
+          {/* Foto berdua: tampil pada mode 'gabung' & 'tiga' */}
+          {(data.photoMode === "gabung" || data.photoMode === "tiga") && data.couplePhoto && (
             <div className="mx-auto mb-10 w-full max-w-sm overflow-hidden rounded-2xl shadow ring-4 ring-white">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={data.couplePhoto} alt="Kedua mempelai" className="kenburns w-full object-cover" />
@@ -249,30 +282,38 @@ export default function InvitationExperience({
           )}
           <div className="relative">
             <div className="grid grid-cols-2 gap-3 sm:gap-5">
-              {[data.groom, data.bride].map((p, i) => (
-                <div key={i} className="flex flex-col items-center text-center">
-                  {p.photo ? (
-                    <div className="w-full overflow-hidden rounded-2xl shadow ring-2 ring-white">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={p.photo} alt={p.name} className="aspect-[4/5] w-full object-cover" />
-                    </div>
-                  ) : (
-                    <div className="flex aspect-[4/5] w-full items-center justify-center rounded-2xl font-serif text-4xl text-white shadow ring-2 ring-white" style={{ background: theme.vars.accent }}>
-                      {p.name.charAt(0)}
-                    </div>
-                  )}
-                  <h3 className="mt-3 font-serif text-lg leading-tight text-[color:var(--heading)]">{p.fullName || p.name}</h3>
-                  {p.parents && <p className="mt-1.5 text-xs leading-snug text-gray-500">{p.parents}</p>}
-                  {p.instagram && <a href={`https://instagram.com/${p.instagram}`} className="mt-1.5 text-xs text-[color:var(--accent)]">@{p.instagram}</a>}
-                </div>
-              ))}
+              {[data.groom, data.bride].map((p, i) => {
+                // Foto per-mempelai tampil pada mode 'pisah' & 'tiga'
+                const showPhoto = data.photoMode === "pisah" || data.photoMode === "tiga";
+                const line = parentLine(p, i === 0);
+                return (
+                  <div key={i} className="flex flex-col items-center text-center">
+                    {showPhoto &&
+                      (p.photo ? (
+                        <div className="w-full overflow-hidden rounded-2xl shadow ring-2 ring-white">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={p.photo} alt={p.name} className="aspect-[4/5] w-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="flex aspect-[4/5] w-full items-center justify-center rounded-2xl font-serif text-4xl text-white shadow ring-2 ring-white" style={{ background: theme.vars.accent }}>
+                          {p.name.charAt(0)}
+                        </div>
+                      ))}
+                    <h3 className="mt-3 font-serif text-lg leading-tight text-[color:var(--heading)]">{p.fullName || p.name}</h3>
+                    {line && <p className="mt-1.5 text-xs leading-snug text-gray-500">{line}</p>}
+                    {p.instagram && <a href={`https://instagram.com/${p.instagram}`} className="mt-1.5 text-xs text-[color:var(--accent)]">@{p.instagram}</a>}
+                  </div>
+                );
+              })}
             </div>
-            <span
-              className="absolute left-1/2 top-[30%] flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white font-serif text-2xl shadow ring-1 ring-black/5"
-              style={{ color: theme.vars.accent }}
-            >
-              &amp;
-            </span>
+            {(data.photoMode === "pisah" || data.photoMode === "tiga") && (
+              <span
+                className="absolute left-1/2 top-[30%] flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white font-serif text-2xl shadow ring-1 ring-black/5"
+                style={{ color: theme.vars.accent }}
+              >
+                &amp;
+              </span>
+            )}
           </div>
         </section>
 
@@ -300,7 +341,7 @@ export default function InvitationExperience({
                 <div key={i} className="relative">
                   <span className="absolute -left-[31px] top-1 h-4 w-4 rounded-full ring-4 ring-white" style={{ background: theme.vars.accent }} />
                   <h3 className="font-serif text-lg text-[color:var(--heading)]">{s.title}</h3>
-                  {s.storyDate && <p className="text-xs text-[color:var(--accent)]">{formatDateID(s.storyDate)}</p>}
+                  {s.storyDate && <p className="text-xs text-[color:var(--accent)]">{formatMonthYearID(s.storyDate)}</p>}
                   {s.story && <p className="mt-1 text-sm leading-relaxed text-gray-600">{s.story}</p>}
                 </div>
               ))}

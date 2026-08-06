@@ -4,13 +4,14 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { identityToEmail } from "@/lib/auth-identity";
 
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const redirect = params.get("redirect") || "/dashboard";
 
-  const [email, setEmail] = useState("");
+  const [identity, setIdentity] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,13 +23,13 @@ function LoginForm() {
 
     const supabase = createClient();
     const { error: loginErr } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
+      email: identityToEmail(identity),
       password,
     });
 
     if (loginErr) {
       setLoading(false);
-      return setError("Email atau password salah.");
+      return setError("Email/No. HP atau password salah.");
     }
 
     router.push(redirect);
@@ -44,13 +45,12 @@ function LoginForm() {
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
-          <label className="label">Email</label>
+          <label className="label">Email atau No. HP</label>
           <input
-            type="email"
             className="input"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="email@contoh.com"
+            value={identity}
+            onChange={(e) => setIdentity(e.target.value)}
+            placeholder="email@contoh.com atau 08xxxxxxxxxx"
             required
           />
         </div>

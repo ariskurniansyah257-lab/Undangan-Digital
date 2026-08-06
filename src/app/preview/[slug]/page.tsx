@@ -24,16 +24,21 @@ export default async function ThemePreviewPage({
   const theme = getTheme(slug);
   const guestName = to ? decodeURIComponent(to) : "Calon Tamu Anda";
 
-  // Ambil harga paket untuk tombol "Pesan Tema Ini".
+  // Ambil harga paket + override tema (config admin) untuk preview.
   let price = 0;
+  let themeConfig: Record<string, unknown> | null = null;
   try {
     const supabase = await createClient();
-    const { data } = await supabase
-      .from("packages")
-      .select("price, discount_price")
-      .eq("slug", theme.packageSlug)
-      .maybeSingle();
-    price = (data?.discount_price ?? data?.price) ?? 0;
+    const [{ data: pkg }, { data: themeRow }] = await Promise.all([
+      supabase
+        .from("packages")
+        .select("price, discount_price")
+        .eq("slug", theme.packageSlug)
+        .maybeSingle(),
+      supabase.from("themes").select("config").eq("slug", slug).maybeSingle(),
+    ]);
+    price = (pkg?.discount_price ?? pkg?.price) ?? 0;
+    themeConfig = (themeRow?.config as Record<string, unknown> | undefined) ?? null;
   } catch {
     /* fallback */
   }
@@ -44,6 +49,7 @@ export default async function ThemePreviewPage({
         data={DEMO_INVITATION}
         guestName={guestName}
         themeSlug={slug}
+        themeConfig={themeConfig}
         previewMode
         orderItem={{
           type: "package",

@@ -55,7 +55,7 @@ async function loadFromDb(slug: string): Promise<InvitationView | null> {
         ? supabase.from("songs").select("url").eq("id", inv.song_id).maybeSingle()
         : Promise.resolve({ data: null }),
       inv.theme_id
-        ? supabase.from("themes").select("slug").eq("id", inv.theme_id).maybeSingle()
+        ? supabase.from("themes").select("slug, config").eq("id", inv.theme_id).maybeSingle()
         : Promise.resolve({ data: null }),
     ]);
 
@@ -72,6 +72,7 @@ async function loadFromDb(slug: string): Promise<InvitationView | null> {
     photoMode: inv.photo_mode,
     themeName: null,
     themeSlug: (themeRow?.data as { slug?: string } | null)?.slug ?? null,
+    themeConfig: (themeRow?.data as { config?: Record<string, unknown> } | null)?.config ?? null,
     songUrl: (song?.data as { url?: string } | null)?.url ?? null,
     groom: cfg.groom ?? { name: "Mempelai Pria" },
     bride: cfg.bride ?? { name: "Mempelai Wanita" },

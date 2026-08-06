@@ -64,6 +64,6 @@ export async function uploadImage(
     return { url: dataUrl, viaStorage: false };
   }
   throw new Error(
-    "Upload video butuh Storage aktif. Aktifkan bucket 'invitations' di Supabase.",
+    "Upload file ini (audio/video) butuh Storage aktif. Aktifkan bucket 'invitations' di Supabase.",
   );
 }

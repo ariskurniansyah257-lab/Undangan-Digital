@@ -3,8 +3,27 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { slugifyName } from "@/lib/constants";
+import {
+  resolveTheme,
+  ANIMATIONS,
+  type OrnamentType,
+  type AnimationType,
+  type ThemeVars,
+} from "@/lib/themes";
 import ImageUpload from "@/components/ImageUpload";
+import PhoneMockup from "@/components/landing/PhoneMockup";
 import type { Theme, Package } from "@/lib/types";
+
+const ORNAMENTS: OrnamentType[] = ["jawa", "padang", "ceria", "modern", "artistik"];
+
+const VAR_FIELDS: { key: keyof ThemeVars; label: string }[] = [
+  { key: "coverFrom", label: "Cover (atas)" },
+  { key: "coverTo", label: "Cover (bawah)" },
+  { key: "accent", label: "Aksen" },
+  { key: "heading", label: "Judul" },
+  { key: "tint", label: "Latar lembut" },
+  { key: "body", label: "Latar isi" },
+];
 
 export default function ThemesManager({ initial, packages }: { initial: Theme[]; packages: Package[] }) {
   const supabase = createClient();
@@ -33,6 +52,9 @@ export default function ThemesManager({ initial, packages }: { initial: Theme[];
     setThemes(themes.filter((t) => t.id !== id));
     await supabase.from("themes").delete().eq("id", id);
   }
+  function patchTheme(id: string, patch: Partial<Theme>) {
+    setThemes((ts) => ts.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+  }
 
   return (
     <div className="space-y-6">
@@ -53,24 +75,123 @@ export default function ThemesManager({ initial, packages }: { initial: Theme[];
         {msg && <p className="text-sm text-gray-600">{msg}</p>}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {themes.map((t) => (
-          <div key={t.id} className="card overflow-hidden">
-            {t.preview_image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={t.preview_image} alt={t.name} className="h-36 w-full object-cover" />
-            ) : (
-              <div className="flex h-36 items-center justify-center bg-gray-100 text-gray-300">Tanpa preview</div>
-            )}
-            <div className="p-4">
-              <p className="font-medium text-gray-900">{t.name}</p>
-              <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-600">{pkgName(t.package_id)}</span>
-              <button onClick={() => del(t.id)} className="mt-2 block text-xs text-red-500">Hapus</button>
-            </div>
-          </div>
+          <ThemeCard key={t.id} theme={t} pkgLabel={pkgName(t.package_id)} onPatch={patchTheme} onDelete={del} />
         ))}
         {themes.length === 0 && <p className="text-gray-400">Belum ada tema.</p>}
       </div>
+    </div>
+  );
+}
+
+function ThemeCard({
+  theme,
+  pkgLabel,
+  onPatch,
+  onDelete,
+}: {
+  theme: Theme;
+  pkgLabel: string;
+  onPatch: (id: string, patch: Partial<Theme>) => void;
+  onDelete: (id: string) => void;
+}) {
+  const supabase = createClient();
+  const eff = resolveTheme(theme.slug, theme.config);
+  const [open, setOpen] = useState(false);
+  const [vars, setVars] = useState<ThemeVars>(eff.vars);
+  const [ornament, setOrnament] = useState<OrnamentType>(eff.ornament);
+  const [animation, setAnimation] = useState<AnimationType>(eff.animation);
+  const [coverImage, setCoverImage] = useState<string>(eff.coverImage ?? "");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  async function save() {
+    setSaving(true);
+    const config = { vars, ornament, animation, coverImage: coverImage || null };
+    const { error } = await supabase.from("themes").update({ config }).eq("id", theme.id);
+    setSaving(false);
+    if (!error) {
+      onPatch(theme.id, { config });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+    }
+  }
+
+  return (
+    <div className="card overflow-hidden">
+      <div className="flex items-center gap-4 p-4">
+        <div className="shrink-0">
+          <PhoneMockup compact from={vars.coverFrom} to={vars.coverTo} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-medium text-gray-900">{theme.name}</p>
+          <p className="truncate text-xs text-gray-400">/{theme.slug}</p>
+          <span className="mt-1 inline-block rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-600">{pkgLabel}</span>
+          <div className="mt-2 flex gap-3 text-xs">
+            <a href={`/preview/${theme.slug}`} target="_blank" rel="noreferrer" className="text-brand-600 underline">👁️ Preview</a>
+            <button onClick={() => setOpen((v) => !v)} className="text-gray-600 underline">
+              {open ? "Tutup editor" : "✏️ Edit tampilan & animasi"}
+            </button>
+            <button onClick={() => onDelete(theme.id)} className="text-red-500">Hapus</button>
+          </div>
+        </div>
+      </div>
+
+      {open && (
+        <div className="space-y-4 border-t border-gray-100 bg-gray-50/60 p-4">
+          {/* Warna cover / isi / background */}
+          <div>
+            <p className="mb-2 text-sm font-medium text-gray-700">Warna (cover, isi, background)</p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {VAR_FIELDS.map((f) => (
+                <label key={f.key} className="flex items-center gap-2 text-xs text-gray-600">
+                  <input
+                    type="color"
+                    value={vars[f.key]}
+                    onChange={(e) => setVars({ ...vars, [f.key]: e.target.value })}
+                    className="h-8 w-10 rounded border border-gray-300"
+                  />
+                  {f.label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Ornamen + animasi */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="label">Ornamen latar</label>
+              <select className="input" value={ornament} onChange={(e) => setOrnament(e.target.value as OrnamentType)}>
+                {ORNAMENTS.map((o) => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="label">Animasi transisi (seperti PPT)</label>
+              <select className="input" value={animation} onChange={(e) => setAnimation(e.target.value as AnimationType)}>
+                {ANIMATIONS.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Gambar cover */}
+          <div>
+            <label className="label">Gambar cover (opsional)</label>
+            <div className="flex gap-2">
+              <input className="input" placeholder="URL gambar cover" value={coverImage} onChange={(e) => setCoverImage(e.target.value)} />
+              <ImageUpload onUploaded={setCoverImage} />
+            </div>
+            {coverImage && <p className="mt-1 truncate text-xs text-green-600">✓ {coverImage}</p>}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button onClick={save} className="btn-primary" disabled={saving}>
+              {saving ? "Menyimpan…" : "Simpan Tema"}
+            </button>
+            {saved && <span className="text-sm text-green-600">Tersimpan ✓</span>}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

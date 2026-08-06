@@ -108,7 +108,7 @@ export interface Invitation {
   quote_mode: "ayat" | "custom";
   quote_text: string | null;
   quote_source: string | null;
-  photo_mode: "gabung" | "pisah";
+  photo_mode: "gabung" | "pisah" | "tiga";
   config: Record<string, unknown>;
   created_at: string;
   updated_at: string;

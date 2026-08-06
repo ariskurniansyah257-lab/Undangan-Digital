@@ -60,6 +60,28 @@ section[id] {
 .snap-slides > section.in-view > *:nth-child(4) {
   animation-delay: 0.24s;
 }
+/* --- Varian animasi transisi slide (dipilih admin per tema) --- */
+@keyframes morph-in {
+  from { opacity: 0; transform: scale(0.9); filter: blur(8px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes ppt-in {
+  from { opacity: 0; transform: translateX(60px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes zoom-in {
+  from { opacity: 0; transform: scale(1.18); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes flip-in {
+  from { opacity: 0; transform: perspective(900px) rotateY(35deg); }
+  to { opacity: 1; transform: perspective(900px) rotateY(0); }
+}
+.snap-slides[data-anim="morph"] > section.in-view > * { animation-name: morph-in; animation-duration: 0.7s; }
+.snap-slides[data-anim="ppt"] > section.in-view > * { animation-name: ppt-in; }
+.snap-slides[data-anim="zoom"] > section.in-view > * { animation-name: zoom-in; animation-duration: 0.8s; }
+.snap-slides[data-anim="flip"] > section.in-view > * { animation-name: flip-in; animation-duration: 0.8s; }
+
 @media (prefers-reduced-motion: reduce) {
   .snap-slides > section.in-view > * {
     animation: none;

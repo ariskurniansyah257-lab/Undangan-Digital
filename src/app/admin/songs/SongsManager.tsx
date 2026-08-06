@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import ImageUpload from "@/components/ImageUpload";
 import type { Song } from "@/lib/types";
 
 export default function SongsManager({ initial }: { initial: Song[] }) {
@@ -39,8 +40,12 @@ export default function SongsManager({ initial }: { initial: Song[] }) {
         <div className="grid gap-2 sm:grid-cols-3">
           <input className="input" placeholder="Judul" value={title} onChange={(e) => setTitle(e.target.value)} />
           <input className="input" placeholder="Artis (opsional)" value={artist} onChange={(e) => setArtist(e.target.value)} />
-          <input className="input" placeholder="URL audio (mp3)" value={url} onChange={(e) => setUrl(e.target.value)} />
+          <div className="flex gap-2">
+            <input className="input" placeholder="URL audio (mp3)" value={url} onChange={(e) => setUrl(e.target.value)} />
+            <ImageUpload label="Unggah MP3" accept="audio/*" onUploaded={setUrl} />
+          </div>
         </div>
+        {url && <p className="truncate text-xs text-green-600">✓ {url}</p>}
         <button onClick={add} className="btn-primary w-fit">+ Tambah</button>
         {msg && <p className="text-sm text-gray-600">{msg}</p>}
       </div>

@@ -3,20 +3,47 @@
 
 export type OrnamentType = "jawa" | "padang" | "ceria" | "modern" | "artistik";
 
+// Jenis animasi transisi antar-slide undangan (seperti transisi PPT).
+export type AnimationType = "fade" | "morph" | "ppt" | "zoom" | "flip";
+
+export const ANIMATIONS: { value: AnimationType; label: string }[] = [
+  { value: "fade", label: "Fade Up (lembut naik)" },
+  { value: "morph", label: "Morph (skala + blur)" },
+  { value: "ppt", label: "Slide PPT (geser samping)" },
+  { value: "zoom", label: "Zoom (membesar)" },
+  { value: "flip", label: "Flip (putar 3D)" },
+];
+
+export interface ThemeVars {
+  coverFrom: string;
+  coverTo: string;
+  accent: string;
+  heading: string;
+  tint: string;
+  body: string;
+}
+
 export interface ThemeStyle {
   slug: string;
   name: string;
   packageSlug: string;
   packageName: string;
   ornament: OrnamentType;
-  vars: {
-    coverFrom: string;
-    coverTo: string;
-    accent: string;
-    heading: string;
-    tint: string;
-    body: string;
-  };
+  vars: ThemeVars;
+}
+
+// Override yang bisa disimpan admin di kolom themes.config (jsonb).
+export interface ThemeConfigOverride {
+  vars?: Partial<ThemeVars>;
+  ornament?: OrnamentType;
+  animation?: AnimationType;
+  coverImage?: string | null;
+}
+
+// Tema efektif setelah base (dari slug) digabung override admin.
+export interface ResolvedTheme extends ThemeStyle {
+  animation: AnimationType;
+  coverImage: string | null;
 }
 
 interface Concept {
@@ -85,6 +112,25 @@ export const THEMES: ThemeStyle[] = PACKAGES.flatMap(([ps, pn]) =>
 
 export function getTheme(slug: string | null | undefined): ThemeStyle {
   return THEMES.find((th) => th.slug === slug) ?? THEMES.find((th) => th.slug === "premium-jawa") ?? THEMES[0];
+}
+
+/**
+ * Gabungkan tema dasar (dari slug) dengan override yang disimpan admin di
+ * kolom themes.config. Menghasilkan tema efektif + jenis animasi + gambar cover.
+ */
+export function resolveTheme(
+  slug: string | null | undefined,
+  config?: Record<string, unknown> | null,
+): ResolvedTheme {
+  const base = getTheme(slug);
+  const cfg = (config ?? {}) as ThemeConfigOverride;
+  return {
+    ...base,
+    ornament: cfg.ornament ?? base.ornament,
+    vars: { ...base.vars, ...(cfg.vars ?? {}) },
+    animation: cfg.animation ?? "fade",
+    coverImage: cfg.coverImage ?? null,
+  };
 }
 
 /** Tema dikelompokkan per paket, menjaga urutan paket. */

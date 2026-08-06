@@ -167,9 +167,13 @@ export default function InvitationEditor({
       </Section>
 
       {/* MEMPELAI */}
-      <Section title="Mempelai" desc="Foto bisa digabung atau dipisah.">
-        <div className="mb-4 flex gap-2">
-          {(["pisah", "gabung"] as const).map((m) => (
+      <Section title="Mempelai" desc="Pilih tampilan foto: 1 foto gabung, foto terpisah, atau 3 foto (gabung + terpisah).">
+        <div className="mb-4 flex flex-wrap gap-2">
+          {([
+            ["gabung", "1 Foto Gabung"],
+            ["pisah", "Foto Terpisah"],
+            ["tiga", "3 Foto (Gabung + Terpisah)"],
+          ] as const).map(([m, lbl]) => (
             <button
               key={m}
               type="button"
@@ -178,13 +182,13 @@ export default function InvitationEditor({
                 photoMode === m ? "border-brand-500 bg-brand-50 text-brand-700" : "border-gray-300 text-gray-600"
               }`}
             >
-              Foto {m === "pisah" ? "Dipisah" : "Digabung"}
+              {lbl}
             </button>
           ))}
         </div>
-        {photoMode === "gabung" && (
+        {(photoMode === "gabung" || photoMode === "tiga") && (
           <div className="mb-4">
-            <label className="label">Foto berdua</label>
+            <label className="label">Foto berdua (gabung)</label>
             <div className="flex gap-2">
               <input className={input} value={couplePhoto} onChange={(e) => setCouplePhoto(e.target.value)} placeholder="URL foto atau upload" />
               <ImageUpload onUploaded={setCouplePhoto} />
@@ -198,9 +202,16 @@ export default function InvitationEditor({
               <p className="font-medium text-gray-700">Mempelai {lbl}</p>
               <input className={input} placeholder="Nama panggilan" value={p.name} onChange={(e) => setP({ ...p, name: e.target.value })} />
               <input className={input} placeholder="Nama lengkap" value={p.fullName} onChange={(e) => setP({ ...p, fullName: e.target.value })} />
-              <input className={input} placeholder="Nama orang tua" value={p.parents} onChange={(e) => setP({ ...p, parents: e.target.value })} />
+              <div className="rounded-lg bg-gray-50 p-3">
+                <p className="mb-2 text-xs font-medium text-gray-500">
+                  {lbl === "Pria" ? "Putra dari" : "Putri dari"}
+                </p>
+                <input className={input} placeholder="Nama ayah" value={p.fatherName ?? ""} onChange={(e) => setP({ ...p, fatherName: e.target.value })} />
+                <input className={`${input} mt-2`} placeholder="Nama ibu" value={p.motherName ?? ""} onChange={(e) => setP({ ...p, motherName: e.target.value })} />
+                <input className={`${input} mt-2`} placeholder={`Urutan anak (mis. ${lbl === "Pria" ? "Putra" : "Putri"} pertama) — opsional`} value={p.childOrder ?? ""} onChange={(e) => setP({ ...p, childOrder: e.target.value })} />
+              </div>
               <input className={input} placeholder="Instagram (tanpa @)" value={p.instagram} onChange={(e) => setP({ ...p, instagram: e.target.value })} />
-              {photoMode === "pisah" && (
+              {(photoMode === "pisah" || photoMode === "tiga") && (
                 <div className="flex gap-2">
                   <input className={input} placeholder="URL foto" value={p.photo} onChange={(e) => setP({ ...p, photo: e.target.value })} />
                   <ImageUpload onUploaded={(url) => setP({ ...p, photo: url })} />
@@ -330,7 +341,19 @@ export default function InvitationEditor({
                 <input className={`${input} mr-2`} placeholder="Judul" value={s.title ?? ""} onChange={(e) => updateChild("invitation_story", story, setStory, i, { title: e.target.value })} />
                 <button onClick={() => removeChild("invitation_story", story, setStory, i)} className="text-sm text-red-500">Hapus</button>
               </div>
-              <input type="date" className={input} value={s.story_date ?? ""} onChange={(e) => updateChild("invitation_story", story, setStory, i, { story_date: e.target.value })} />
+              <div>
+                <label className="mb-1 block text-xs text-gray-500">Bulan & tahun</label>
+                <input
+                  type="month"
+                  className={input}
+                  value={(s.story_date ?? "").slice(0, 7)}
+                  onChange={(e) =>
+                    updateChild("invitation_story", story, setStory, i, {
+                      story_date: e.target.value ? `${e.target.value}-01` : null,
+                    })
+                  }
+                />
+              </div>
               <textarea className={`${input} min-h-[70px]`} placeholder="Cerita" value={s.story ?? ""} onChange={(e) => updateChild("invitation_story", story, setStory, i, { story: e.target.value })} />
             </div>
           ))}
