@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Agar lompatan anchor tidak tertutup header sticky */
+section[id] {
+  scroll-margin-top: 72px;
+}
+
+/* Mode slide undangan: tiap <section> = satu layar penuh, snap ke berikutnya */
+.snap-slides {
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.snap-slides::-webkit-scrollbar {
+  display: none;
+}
+.snap-slides > section {
+  min-height: 100dvh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  scroll-margin-top: 0; /* batalkan offset anchor home agar slide center */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 3.5rem;
+  padding-bottom: 5rem; /* ruang untuk bottom-nav & tombol musik */
+}
+
+/* Animasi masuk saat slide tampil (fade + naik lembut, bertahap) */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.snap-slides > section.in-view > * {
+  animation: slide-in 0.6s ease both;
+}
+.snap-slides > section.in-view > *:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.snap-slides > section.in-view > *:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.snap-slides > section.in-view > *:nth-child(4) {
+  animation-delay: 0.24s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .snap-slides > section.in-view > * {
+    animation: none;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin-slow {
+  display: inline-block;
+  animation: spin-slow 3s linear infinite;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.gallery-marquee {
+  display: flex;
+  width: max-content;
+  gap: 0.75rem;
+  animation: marquee 22s linear infinite;
+}
+
+@keyframes kenburns {
+  from { transform: scale(1); }
+  to { transform: scale(1.12); }
+}
+.kenburns {
+  animation: kenburns 10s ease-in-out infinite alternate;
+}
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.photo-float {
+  animation: floaty 5s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: fade-up 0.8s ease both;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-700;
+  }
+  .btn-outline {
+    @apply btn border border-gray-300 bg-white text-gray-700 hover:bg-gray-50;
+  }
+  .btn-ghost {
+    @apply btn text-gray-600 hover:bg-gray-100;
+  }
+  .input {
+    @apply w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-gray-700;
+  }
+  .card {
+    @apply rounded-xl border border-gray-200 bg-white shadow-sm;
+  }
+}
