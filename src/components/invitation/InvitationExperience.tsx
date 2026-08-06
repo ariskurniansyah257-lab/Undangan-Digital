@@ -6,6 +6,7 @@ import { resolveTheme } from "@/lib/themes";
 import type { PersonProfile } from "@/lib/invitation-view";
 import { createGenerativeMusic, type MusicController } from "@/lib/music";
 import { OrnamentPattern, OrnamentCorner } from "./Ornament";
+import { StickerVisual, stickerBoxStyle } from "./Sticker";
 import QrButton from "./QrButton";
 import AddToCartButton from "@/components/AddToCartButton";
 import type { InvitationView } from "@/lib/invitation-view";
@@ -97,6 +98,25 @@ export default function InvitationExperience({
     type: theme.slides[id]?.ornament ?? theme.ornament,
     image: theme.slides[id]?.ornamentImage ?? theme.ornamentImage,
   });
+  // Lapisan ornamen yang ditempel manual (per halaman) — masing-masing punya transisi.
+  const stickerLayer = (id: string) => {
+    const st = theme.slides[id]?.stickers ?? [];
+    if (!st.length) return null;
+    return (
+      <div className="sticker-layer pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        {st.map((s) => (
+          <div
+            key={s.id}
+            className="sticker"
+            data-anim={s.animation ?? animFor(id)}
+            style={{ ...stickerBoxStyle(s), color: theme.vars.accent }}
+          >
+            <StickerVisual s={s} />
+          </div>
+        ))}
+      </div>
+    );
+  };
   const [opened, setOpened] = useState(false);
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -265,6 +285,7 @@ export default function InvitationExperience({
         }`}
       >
         <section id="hero" data-anim={animFor("hero")} className="relative flex min-h-screen flex-col items-center justify-center px-6 py-20 text-center">
+          {stickerLayer("hero")}
           <OrnamentCorner type={theme.ornament} className="absolute left-0 top-0 h-24 w-24 text-[color:var(--accent)] opacity-50" />
           <OrnamentCorner type={theme.ornament} className="absolute bottom-0 right-0 h-24 w-24 rotate-180 text-[color:var(--accent)] opacity-50" />
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--accent)]">The Wedding Of</p>
@@ -284,12 +305,14 @@ export default function InvitationExperience({
 
         {data.quoteText && (
           <section id="quote" data-anim={animFor("quote")} className="px-8 py-16 text-center" style={{ backgroundColor: tintBg }}>
+          {stickerLayer("quote")}
             <p className="mx-auto max-w-md font-serif text-lg italic leading-relaxed text-gray-600">&ldquo;{data.quoteText}&rdquo;</p>
             {data.quoteSource && <p className="mt-4 text-sm font-semibold text-[color:var(--accent)]">({data.quoteSource})</p>}
           </section>
         )}
 
         <section id="mempelai" data-anim={animFor("mempelai")} className="px-6 py-16">
+          {stickerLayer("mempelai")}
           <SectionTitle>Mempelai</SectionTitle>
           <p className="mb-10 text-center text-sm text-gray-500">{data.coupleTagline}</p>
           {/* Foto berdua: tampil pada mode 'gabung' & 'tiga' */}
@@ -337,6 +360,7 @@ export default function InvitationExperience({
         </section>
 
         <section id="acara" data-anim={animFor("acara")} className="px-6 py-16" style={{ backgroundColor: tintBg }}>
+          {stickerLayer("acara")}
           <SectionTitle>Rangkaian Acara</SectionTitle>
           <div className="space-y-6">
             {data.events.map((ev, i) => (
@@ -354,6 +378,7 @@ export default function InvitationExperience({
 
         {data.story.length > 0 && (
           <section id="journey" data-anim={animFor("journey")} className="px-6 py-16">
+          {stickerLayer("journey")}
             <SectionTitle>Our Journey</SectionTitle>
             <div className="relative ml-3 space-y-8 border-l-2 border-black/10 pl-6">
               {data.story.map((s, i) => (
@@ -370,6 +395,7 @@ export default function InvitationExperience({
 
         {data.gallery.length > 0 && (
           <section id="galeri" data-anim={animFor("galeri")} className="overflow-hidden py-16" style={{ backgroundColor: tintBg }}>
+          {stickerLayer("galeri")}
             <div className="px-6"><SectionTitle>Galeri</SectionTitle></div>
             {data.galleryMode === "slide" ? (
               <div className="relative w-full overflow-hidden">
@@ -395,6 +421,7 @@ export default function InvitationExperience({
 
         {data.videoUrl && (
           <section id="video" data-anim={animFor("video")} className="px-6 py-16">
+          {stickerLayer("video")}
             <SectionTitle>Video</SectionTitle>
             {/youtube|youtu\.be/.test(data.videoUrl) ? (
               <div className="aspect-video w-full overflow-hidden rounded-xl">
@@ -408,6 +435,7 @@ export default function InvitationExperience({
 
         {data.banks.length > 0 && (
           <section id="gift" data-anim={animFor("gift")} className="px-6 py-16">
+          {stickerLayer("gift")}
             <SectionTitle>Amplop Digital</SectionTitle>
             <p className="mb-8 text-center text-sm text-gray-500">Doa restu Anda karunia terindah. Bila berkenan memberi tanda kasih:</p>
             <div className="space-y-4">{data.banks.map((b, i) => <GiftCard key={i} bank={b} heading={theme.vars.heading} />)}</div>
@@ -415,11 +443,13 @@ export default function InvitationExperience({
         )}
 
         <section id="rsvp" data-anim={animFor("rsvp")} className="px-6 py-16" style={{ backgroundColor: tintBg }}>
+          {stickerLayer("rsvp")}
           <SectionTitle>Konfirmasi Kehadiran</SectionTitle>
           <RSVPBlock invitationId={previewMode ? null : data.id} defaultName={guestName} accent={theme.vars.accent} />
         </section>
 
         <section id="closing" data-anim={animFor("closing")} className="px-6 py-20 pb-28 text-center">
+          {stickerLayer("closing")}
           <p className="mx-auto max-w-md text-sm leading-relaxed text-gray-600">{data.closingMessage}</p>
           <div className="my-8 mx-auto h-px w-16" style={{ background: theme.vars.accent, opacity: 0.6 }} />
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--accent)]">Wassalam</p>

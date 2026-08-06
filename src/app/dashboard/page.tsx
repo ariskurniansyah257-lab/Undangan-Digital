@@ -23,8 +23,16 @@ export default async function DashboardHome() {
     .order("created_at", { ascending: false })
     .limit(5);
 
+  // Produk yang sudah dibeli (item pesanan dengan product_id, milik user).
+  const { data: purchased } = await supabase
+    .from("order_items")
+    .select("name, price, qty, product_id, orders!inner(status, user_id, created_at)")
+    .not("product_id", "is", null)
+    .eq("orders.user_id", user!.id);
+
   const invs = (invitations ?? []) as Invitation[];
   const ords = (orders ?? []) as Order[];
+  const myProducts = (purchased ?? []) as any[];
 
   return (
     <div className="space-y-8">
@@ -77,6 +85,45 @@ export default async function DashboardHome() {
                 <p className="mt-1 text-sm text-gray-500">/{inv.slug}</p>
               </Link>
             ))}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-800">Produk Saya</h2>
+          <Link href="/dashboard/products" className="text-sm font-medium text-brand-600">
+            + Beli produk
+          </Link>
+        </div>
+        {myProducts.length === 0 ? (
+          <div className="card p-6 text-center text-gray-500">
+            Belum ada produk dibeli.{" "}
+            <Link href="/dashboard/products" className="text-brand-600">Lihat katalog produk</Link>.
+          </div>
+        ) : (
+          <div className="card divide-y divide-gray-100">
+            {myProducts.map((it, i) => {
+              const st = it.orders?.status as keyof typeof ORDER_STATUS | undefined;
+              return (
+                <div key={i} className="flex items-center justify-between p-4">
+                  <div>
+                    <p className="font-medium text-gray-900">{it.name}</p>
+                    <p className="text-sm text-gray-500">{formatIDR(it.price)} × {it.qty}</p>
+                  </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${
+                      st === "berhasil" ? "bg-green-100 text-green-700"
+                      : st === "ditolak" ? "bg-red-100 text-red-700"
+                      : st === "diproses" ? "bg-blue-100 text-blue-700"
+                      : "bg-amber-100 text-amber-700"
+                    }`}
+                  >
+                    {st ? ORDER_STATUS[st].label : "—"}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
       </section>

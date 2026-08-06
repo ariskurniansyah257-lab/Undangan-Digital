@@ -14,6 +14,7 @@ import {
 } from "@/lib/themes";
 import ImageField from "@/components/ImageField";
 import PhoneMockup from "@/components/landing/PhoneMockup";
+import TemplateFullEditor from "./TemplateFullEditor";
 import type { Theme, Package } from "@/lib/types";
 
 const ORNAMENTS: OrnamentType[] = ["jawa", "padang", "ceria", "modern", "artistik"];
@@ -109,6 +110,7 @@ function ThemeCard({
   const [slides, setSlides] = useState<Record<string, SlideOverride>>(eff.slides ?? {});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [fullOpen, setFullOpen] = useState(false);
 
   function patchSlide(id: string, patch: SlideOverride) {
     setSlides((s) => {
@@ -154,6 +156,9 @@ function ThemeCard({
             <a href={`/preview/${theme.slug}`} target="_blank" rel="noreferrer" className="text-brand-600 underline">👁️ Preview</a>
             <button onClick={() => setOpen((v) => !v)} className="text-gray-600 underline">
               {open ? "Tutup editor" : "✏️ Edit tampilan & animasi"}
+            </button>
+            <button onClick={() => setFullOpen(true)} className="font-medium text-brand-600 underline">
+              🎨 Editor Penuh (tempel ornamen)
             </button>
             <button onClick={() => onDelete(theme.id)} className="text-red-500">Hapus</button>
           </div>
@@ -269,6 +274,17 @@ function ThemeCard({
             {saved && <span className="text-sm text-green-600">Tersimpan ✓</span>}
           </div>
         </div>
+      )}
+
+      {fullOpen && (
+        <TemplateFullEditor
+          theme={theme}
+          onClose={() => setFullOpen(false)}
+          onSaved={(config) => {
+            onPatch(theme.id, { config });
+            setSlides((config.slides as Record<string, SlideOverride>) ?? {});
+          }}
+        />
       )}
     </div>
   );

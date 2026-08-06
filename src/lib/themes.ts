@@ -58,11 +58,27 @@ export interface ThemeStyle {
   vars: ThemeVars;
 }
 
-// Pengaturan per-halaman (per-slide) — seperti mengedit tiap halaman di PPT.
+// Ornamen yang ditempel manual pada sebuah halaman (seperti elemen di Canva).
+// Posisi & ukuran dalam persen relatif terhadap kanvas halaman.
+export interface Sticker {
+  id: string;
+  kind: "ornament" | "image";
+  ornament?: OrnamentType; // untuk kind "ornament" (motif bawaan)
+  src?: string; // untuk kind "image" (gambar diunggah)
+  x: number; // 0..100 (pusat)
+  y: number; // 0..100 (pusat)
+  size: number; // lebar dalam % kanvas
+  rotation?: number; // derajat
+  opacity?: number; // 0..1
+  animation?: AnimationType; // transisi masuk khusus ornamen ini
+}
+
+// Pengaturan per-halaman (per-slide) — seperti mengedit tiap halaman di PPT/Canva.
 export interface SlideOverride {
   animation?: AnimationType;
   ornament?: OrnamentType;
   ornamentImage?: string | null;
+  stickers?: Sticker[]; // ornamen yang ditempel manual
 }
 
 // Daftar halaman template yang bisa diatur admin (transisi & ornamen per halaman).
