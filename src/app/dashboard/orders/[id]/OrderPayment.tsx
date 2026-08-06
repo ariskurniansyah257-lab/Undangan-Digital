@@ -34,6 +34,9 @@ export default function OrderPayment({
   const [copied, setCopied] = useState<string | null>(null);
   const [qrisZoom, setQrisZoom] = useState(false);
 
+  const [submitting, setSubmitting] = useState(false);
+
+  // Langkah 1: unggah bukti (disimpan, status tetap 'menunggu').
   async function onUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -47,14 +50,22 @@ export default function OrderPayment({
       setUploading(false);
       return setMsg(`Gagal unggah: ${err?.message ?? "coba lagi"}`);
     }
-    await supabase
-      .from("orders")
-      .update({ payment_proof_url: url, status: "diproses" })
-      .eq("id", order.id);
-    setProofUrl(url);
-    setStatus("diproses");
+    const { error } = await supabase.from("orders").update({ payment_proof_url: url }).eq("id", order.id);
     setUploading(false);
-    setMsg("Bukti bayar terunggah. Menunggu verifikasi admin.");
+    if (error) return setMsg(`Gagal simpan: ${error.message}`);
+    setProofUrl(url);
+    setMsg("Bukti terunggah. Klik “Lanjutkan Pembayaran” untuk mengirim ke admin.");
+  }
+
+  // Langkah 2: kirim ke admin (status → 'diproses').
+  async function submitPayment() {
+    if (!proofUrl) return setMsg("Unggah bukti pembayaran dulu.");
+    setSubmitting(true);
+    const { error } = await supabase.from("orders").update({ status: "diproses" }).eq("id", order.id);
+    setSubmitting(false);
+    if (error) return setMsg(`Gagal: ${error.message}`);
+    setStatus("diproses");
+    setMsg("Pembayaran dikirim. Menunggu verifikasi admin.");
     router.refresh();
   }
 
@@ -144,15 +155,32 @@ export default function OrderPayment({
           )}
 
           <div className="mt-5">
-            <label className="label">Unggah bukti pembayaran</label>
+            <label className="label">1. Unggah bukti pembayaran</label>
             <input type="file" accept="image/*" onChange={onUpload} disabled={uploading} className="block w-full text-sm" />
             {uploading && <p className="mt-1 text-sm text-gray-500">Mengunggah…</p>}
+            {proofUrl && (
+              <div className="mt-3">
+                <p className="mb-1 text-xs text-gray-500">Pratinjau bukti:</p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={proofUrl} alt="Bukti bayar" className="max-h-48 rounded-lg border" />
+              </div>
+            )}
           </div>
+
+          {status === "menunggu" && (
+            <button
+              onClick={submitPayment}
+              disabled={!proofUrl || submitting}
+              className="btn-primary mt-4 w-full py-2.5"
+            >
+              {submitting ? "Mengirim…" : "2. Lanjutkan Pembayaran (kirim ke admin)"}
+            </button>
+          )}
           {msg && <p className="mt-2 text-sm text-gray-600">{msg}</p>}
         </div>
       )}
 
-      {proofUrl && (
+      {proofUrl && status !== "menunggu" && (
         <div className="card p-5">
           <p className="mb-2 text-sm font-medium text-gray-700">Bukti bayar terunggah:</p>
           {/* eslint-disable-next-line @next/next/no-img-element */}

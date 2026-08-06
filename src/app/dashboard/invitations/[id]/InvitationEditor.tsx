@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { EVENT_TYPES } from "@/lib/constants";
 import { VERSE_PRESETS, RELIGIONS } from "@/lib/verses";
 import { CLOSING_PRESETS } from "@/lib/closings";
+import { OPENING_PRESETS } from "@/lib/openings";
 import ImageUpload from "@/components/ImageUpload";
 import ImageField from "@/components/ImageField";
 import type { Invitation, Song, Package } from "@/lib/types";
@@ -235,7 +236,17 @@ export default function InvitationEditor({
           </div>
           <div>
             <label className="label">Kalimat pembuka</label>
-            <input className={input} value={coupleTagline} onChange={(e) => setCoupleTagline(e.target.value)} placeholder="Dengan memohon rahmat Tuhan..." />
+            <select
+              className={`${input} mb-2`}
+              value=""
+              onChange={(e) => { if (e.target.value) setCoupleTagline(e.target.value); }}
+            >
+              <option value="">— Pilih preset kata pembuka (bisa diedit) —</option>
+              {OPENING_PRESETS.map((c, i) => (
+                <option key={i} value={c}>{c.slice(0, 60)}…</option>
+              ))}
+            </select>
+            <textarea className={`${input} min-h-[70px]`} value={coupleTagline} onChange={(e) => setCoupleTagline(e.target.value)} placeholder="Tulis atau pilih preset kata pembuka di atas" />
           </div>
 
           <div className="rounded-lg border border-gray-100 p-4">
