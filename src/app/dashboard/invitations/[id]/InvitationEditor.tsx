@@ -137,7 +137,7 @@ export default function InvitationEditor({
   const input = "input";
 
   return (
-    <div className="space-y-5 pb-24">
+    <div className="space-y-5 pb-40 md:pb-24">
       {/* INFO DASAR */}
       <Section title="Info Dasar">
         <div className="space-y-4">
@@ -426,12 +426,12 @@ export default function InvitationEditor({
         )}
       </Section>
 
-      {/* SAVE BAR */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white/95 p-3 backdrop-blur md:pl-64">
+      {/* SAVE BAR — di HP diangkat ke atas menu navigasi bawah agar tidak tertutup */}
+      <div className="fixed inset-x-0 bottom-16 z-40 border-t border-gray-200 bg-white/95 p-3 backdrop-blur md:bottom-0 md:pl-64">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-1">
           <span className={`text-sm ${msg?.startsWith("Gagal") ? "text-red-600" : "text-green-600"}`}>{msg}</span>
-          <button onClick={saveMain} className="btn-primary" disabled={saving}>
-            {saving ? "Menyimpan…" : "Simpan Perubahan"}
+          <button onClick={saveMain} className="btn-primary shrink-0" disabled={saving}>
+            {saving ? "Menyimpan…" : "💾 Simpan Draft"}
           </button>
         </div>
       </div>
