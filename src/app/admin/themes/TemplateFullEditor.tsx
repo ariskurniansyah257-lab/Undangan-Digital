@@ -131,9 +131,9 @@ export default function TemplateFullEditor({
         ))}
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-y-auto md:flex-row md:overflow-hidden">
         {/* Kanvas */}
-        <div className="flex flex-1 items-center justify-center overflow-auto p-4">
+        <div className="flex items-center justify-center p-4 md:flex-1 md:overflow-auto">
           <div
             ref={canvasRef}
             onPointerMove={onPointerMove}
@@ -171,7 +171,7 @@ export default function TemplateFullEditor({
         </div>
 
         {/* Panel kontrol */}
-        <div className="w-72 shrink-0 space-y-4 overflow-y-auto border-l border-white/10 bg-gray-950 p-4 text-sm">
+        <div className="w-full shrink-0 space-y-4 border-t border-white/10 bg-gray-950 p-4 text-sm md:w-72 md:overflow-y-auto md:border-l md:border-t-0">
           <div>
             <p className="mb-2 font-medium">Tambah ornamen bawaan</p>
             <div className="grid grid-cols-3 gap-2">

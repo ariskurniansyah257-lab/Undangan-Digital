@@ -152,7 +152,7 @@ function ThemeCard({
           <p className="font-medium text-gray-900">{theme.name}</p>
           <p className="truncate text-xs text-gray-400">/{theme.slug}</p>
           <span className="mt-1 inline-block rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-600">{pkgLabel}</span>
-          <div className="mt-2 flex gap-3 text-xs">
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1.5 text-xs">
             <a href={`/preview/${theme.slug}`} target="_blank" rel="noreferrer" className="text-brand-600 underline">👁️ Preview</a>
             <button onClick={() => setOpen((v) => !v)} className="text-gray-600 underline">
               {open ? "Tutup editor" : "✏️ Edit tampilan & animasi"}

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SidebarNav, { type NavItem } from "@/components/SidebarNav";
 import SignOutButton from "@/components/SignOutButton";
+import AdminMobileNav from "@/components/AdminMobileNav";
 import { ensureProfile } from "@/lib/profile";
 
 const NAV: NavItem[] = [
@@ -57,6 +58,7 @@ export default async function AdminLayout({
       </aside>
 
       <main className="flex-1 overflow-x-hidden">
+        <AdminMobileNav items={NAV} />
         <div className="mx-auto max-w-6xl p-4 sm:p-8">{children}</div>
       </main>
     </div>
