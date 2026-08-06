@@ -6,9 +6,11 @@ import { slugifyName } from "@/lib/constants";
 import {
   resolveTheme,
   ANIMATIONS,
+  TEMPLATE_SLIDES,
   type OrnamentType,
   type AnimationType,
   type ThemeVars,
+  type SlideOverride,
 } from "@/lib/themes";
 import ImageField from "@/components/ImageField";
 import PhoneMockup from "@/components/landing/PhoneMockup";
@@ -104,8 +106,20 @@ function ThemeCard({
   const [animation, setAnimation] = useState<AnimationType>(eff.animation);
   const [coverImage, setCoverImage] = useState<string>(eff.coverImage ?? "");
   const [ornamentImage, setOrnamentImage] = useState<string>(eff.ornamentImage ?? "");
+  const [slides, setSlides] = useState<Record<string, SlideOverride>>(eff.slides ?? {});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  function patchSlide(id: string, patch: SlideOverride) {
+    setSlides((s) => {
+      const merged = { ...(s[id] ?? {}), ...patch };
+      // Buang nilai kosong agar fallback ke setelan tema.
+      (Object.keys(merged) as (keyof SlideOverride)[]).forEach((k) => {
+        if (merged[k] === "" || merged[k] === undefined || merged[k] === null) delete merged[k];
+      });
+      return { ...s, [id]: merged };
+    });
+  }
 
   async function save() {
     setSaving(true);
@@ -115,6 +129,7 @@ function ThemeCard({
       ornamentImage: ornamentImage || null,
       animation,
       coverImage: coverImage || null,
+      slides,
     };
     const { error } = await supabase.from("themes").update({ config }).eq("id", theme.id);
     setSaving(false);
@@ -194,6 +209,57 @@ function ThemeCard({
           <div>
             <label className="label">Gambar cover (opsional)</label>
             <ImageField value={coverImage} onChange={setCoverImage} label="cover" />
+          </div>
+
+          {/* EDITOR TEMPLATE PER HALAMAN (seperti PowerPoint / Canva) */}
+          <div className="rounded-lg border border-gray-200 bg-white p-3">
+            <p className="text-sm font-semibold text-gray-800">Edit Template per Halaman</p>
+            <p className="mb-3 text-xs text-gray-500">
+              Atur transisi & ornamen untuk tiap halaman undangan secara terpisah, layaknya
+              mengedit slide di PowerPoint. Kosongkan untuk mengikuti setelan tema di atas.
+            </p>
+            <div className="space-y-2">
+              {TEMPLATE_SLIDES.map((sl) => {
+                const cur = slides[sl.id] ?? {};
+                return (
+                  <div key={sl.id} className="rounded-lg bg-gray-50 p-3">
+                    <p className="mb-2 text-sm font-medium text-gray-700">{sl.label}</p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1 block text-[11px] text-gray-500">Transisi halaman</label>
+                        <select
+                          className="input py-1.5 text-xs"
+                          value={cur.animation ?? ""}
+                          onChange={(e) => patchSlide(sl.id, { animation: (e.target.value || undefined) as AnimationType | undefined })}
+                        >
+                          <option value="">— ikuti tema —</option>
+                          {ANIMATIONS.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-[11px] text-gray-500">Ornamen halaman</label>
+                        <select
+                          className="input py-1.5 text-xs"
+                          value={cur.ornament ?? ""}
+                          onChange={(e) => patchSlide(sl.id, { ornament: (e.target.value || undefined) as OrnamentType | undefined })}
+                        >
+                          <option value="">— ikuti tema —</option>
+                          {ORNAMENTS.map((o) => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <label className="mb-1 block text-[11px] text-gray-500">Ornamen kustom halaman ini (opsional)</label>
+                      <ImageField
+                        value={cur.ornamentImage ?? ""}
+                        onChange={(url) => patchSlide(sl.id, { ornamentImage: url || undefined })}
+                        label="ornamen"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           <div className="flex items-center gap-3">

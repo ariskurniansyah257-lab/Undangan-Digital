@@ -22,10 +22,20 @@ const NEXT: Record<string, OrderStatus[]> = {
   ditolak: ["diproses"],
 };
 
+const STATUS_FILTERS: { value: "semua" | OrderStatus; label: string }[] = [
+  { value: "semua", label: "Semua" },
+  { value: "menunggu", label: "Menunggu" },
+  { value: "diproses", label: "Diproses" },
+  { value: "berhasil", label: "Berhasil" },
+  { value: "ditolak", label: "Ditolak" },
+];
+
 export default function PaymentsManager({ initial }: { initial: OrderRow[] }) {
   const supabase = createClient();
   const [orders, setOrders] = useState(initial);
   const [zoom, setZoom] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"semua" | OrderStatus>("semua");
+  const [q, setQ] = useState("");
 
   async function setStatus(o: OrderRow, status: OrderStatus) {
     setOrders(orders.map((x) => (x.id === o.id ? { ...x, status } : x)));
@@ -35,12 +45,64 @@ export default function PaymentsManager({ initial }: { initial: OrderRow[] }) {
       .eq("id", o.id);
   }
 
-  if (orders.length === 0)
-    return <div className="card p-10 text-center text-gray-400">Belum ada pesanan.</div>;
+  const term = q.trim().toLowerCase();
+  const visible = orders.filter((o) => {
+    if (filter !== "semua" && o.status !== filter) return false;
+    if (!term) return true;
+    const hay = [
+      o.invoice_no,
+      o.profiles?.full_name,
+      o.profiles?.email,
+      ...(o.order_items ?? []).map((i) => i.name),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return hay.includes(term);
+  });
+
+  const countByStatus = (s: "semua" | OrderStatus) =>
+    s === "semua" ? orders.length : orders.filter((o) => o.status === s).length;
 
   return (
     <div className="space-y-4">
-      {orders.map((o) => (
+      {/* Filter jenis transaksi + pencarian */}
+      <div className="card space-y-3 p-4">
+        <div className="flex flex-wrap gap-2">
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setFilter(f.value)}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                filter === f.value
+                  ? "border-brand-600 bg-brand-600 text-white"
+                  : "border-gray-300 bg-white text-gray-600 hover:border-brand-300"
+              }`}
+            >
+              {f.label}
+              <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] ${filter === f.value ? "bg-white/25" : "bg-gray-100"}`}>
+                {countByStatus(f.value)}
+              </span>
+            </button>
+          ))}
+        </div>
+        <div className="relative">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+          <input
+            className="input pl-9"
+            placeholder="Cari invoice, nama, email, atau produk…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {orders.length === 0 ? (
+        <div className="card p-10 text-center text-gray-400">Belum ada pesanan.</div>
+      ) : visible.length === 0 ? (
+        <div className="card p-10 text-center text-gray-400">Tidak ada transaksi yang cocok.</div>
+      ) : (
+        visible.map((o) => (
         <div key={o.id} className="card p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -95,7 +157,8 @@ export default function PaymentsManager({ initial }: { initial: OrderRow[] }) {
             ))}
           </div>
         </div>
-      ))}
+        ))
+      )}
 
       {zoom && (
         <div

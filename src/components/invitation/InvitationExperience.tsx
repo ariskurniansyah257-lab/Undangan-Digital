@@ -90,6 +90,13 @@ export default function InvitationExperience({
 }) {
   const theme = resolveTheme(themeSlug, themeConfig ?? data.themeConfig);
   const tintBg = hexToRgba(theme.vars.tint, 0.5);
+
+  // Pengaturan per-halaman (transisi & ornamen). Fallback ke setelan tema.
+  const animFor = (id: string) => theme.slides[id]?.animation ?? theme.animation;
+  const ornFor = (id: string) => ({
+    type: theme.slides[id]?.ornament ?? theme.ornament,
+    image: theme.slides[id]?.ornamentImage ?? theme.ornamentImage,
+  });
   const [opened, setOpened] = useState(false);
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -189,18 +196,23 @@ export default function InvitationExperience({
       className="relative mx-auto min-h-screen max-w-lg overflow-hidden bg-[var(--body)] text-gray-700 shadow-2xl"
       style={cssVars}
     >
-      {theme.ornamentImage ? (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-[0.13]"
-          style={{ backgroundImage: `url(${theme.ornamentImage})`, backgroundRepeat: "repeat", backgroundSize: "180px" }}
-        />
-      ) : (
-        <OrnamentPattern
-          type={theme.ornament}
-          className="pointer-events-none absolute inset-0 -z-10 h-full w-full text-[color:var(--heading)] opacity-[0.13]"
-        />
-      )}
+      {/* Ornamen latar mengikuti halaman aktif (ornamen per-halaman). */}
+      {(() => {
+        const orn = ornFor(activeId);
+        return orn.image ? (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-[0.13] transition-opacity duration-500"
+            style={{ backgroundImage: `url(${orn.image})`, backgroundRepeat: "repeat", backgroundSize: "180px" }}
+          />
+        ) : (
+          <OrnamentPattern
+            key={orn.type}
+            type={orn.type}
+            className="pointer-events-none absolute inset-0 -z-10 h-full w-full text-[color:var(--heading)] opacity-[0.13]"
+          />
+        );
+      })()}
       {data.songUrl && <audio ref={audioRef} src={data.songUrl} loop preload="auto" />}
 
       {previewMode && (
@@ -221,10 +233,10 @@ export default function InvitationExperience({
             : `linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.6)), linear-gradient(160deg, ${theme.vars.coverFrom}, ${theme.vars.coverTo})`,
         }}
       >
-        <OrnamentPattern type={theme.ornament} className="pointer-events-none absolute inset-0 text-[color:var(--accent)] opacity-[0.16]" />
+        <OrnamentPattern type={ornFor("cover").type} className="pointer-events-none absolute inset-0 text-[color:var(--accent)] opacity-[0.16]" />
         <div className="pointer-events-none absolute inset-4 rounded-2xl border opacity-30" style={{ borderColor: theme.vars.accent }} />
-        <OrnamentCorner type={theme.ornament} className="absolute left-2 top-2 h-28 w-28 text-[color:var(--accent)]" />
-        <OrnamentCorner type={theme.ornament} className="absolute bottom-2 right-2 h-28 w-28 rotate-180 text-[color:var(--accent)]" />
+        <OrnamentCorner type={ornFor("cover").type} className="absolute left-2 top-2 h-28 w-28 text-[color:var(--accent)]" />
+        <OrnamentCorner type={ornFor("cover").type} className="absolute bottom-2 right-2 h-28 w-28 rotate-180 text-[color:var(--accent)]" />
         <div className="relative z-10 flex flex-col items-center">
           <p className="mb-3 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)]">The Wedding Of</p>
           <h1 className="font-serif text-4xl text-white sm:text-5xl">{data.groom.name} &amp; {data.bride.name}</h1>
@@ -248,12 +260,11 @@ export default function InvitationExperience({
       {/* ISI — mode slide: tiap section satu layar, snap ke berikutnya */}
       <div
         ref={scrollRef}
-        data-anim={theme.animation}
         className={`snap-slides h-[100dvh] overflow-y-scroll transition-opacity duration-500 ${
           opened ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       >
-        <section id="hero" className="relative flex min-h-screen flex-col items-center justify-center px-6 py-20 text-center">
+        <section id="hero" data-anim={animFor("hero")} className="relative flex min-h-screen flex-col items-center justify-center px-6 py-20 text-center">
           <OrnamentCorner type={theme.ornament} className="absolute left-0 top-0 h-24 w-24 text-[color:var(--accent)] opacity-50" />
           <OrnamentCorner type={theme.ornament} className="absolute bottom-0 right-0 h-24 w-24 rotate-180 text-[color:var(--accent)] opacity-50" />
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--accent)]">The Wedding Of</p>
@@ -272,13 +283,13 @@ export default function InvitationExperience({
         </section>
 
         {data.quoteText && (
-          <section id="quote" className="px-8 py-16 text-center" style={{ backgroundColor: tintBg }}>
+          <section id="quote" data-anim={animFor("quote")} className="px-8 py-16 text-center" style={{ backgroundColor: tintBg }}>
             <p className="mx-auto max-w-md font-serif text-lg italic leading-relaxed text-gray-600">&ldquo;{data.quoteText}&rdquo;</p>
             {data.quoteSource && <p className="mt-4 text-sm font-semibold text-[color:var(--accent)]">({data.quoteSource})</p>}
           </section>
         )}
 
-        <section id="mempelai" className="px-6 py-16">
+        <section id="mempelai" data-anim={animFor("mempelai")} className="px-6 py-16">
           <SectionTitle>Mempelai</SectionTitle>
           <p className="mb-10 text-center text-sm text-gray-500">{data.coupleTagline}</p>
           {/* Foto berdua: tampil pada mode 'gabung' & 'tiga' */}
@@ -325,7 +336,7 @@ export default function InvitationExperience({
           </div>
         </section>
 
-        <section id="acara" className="px-6 py-16" style={{ backgroundColor: tintBg }}>
+        <section id="acara" data-anim={animFor("acara")} className="px-6 py-16" style={{ backgroundColor: tintBg }}>
           <SectionTitle>Rangkaian Acara</SectionTitle>
           <div className="space-y-6">
             {data.events.map((ev, i) => (
@@ -342,7 +353,7 @@ export default function InvitationExperience({
         </section>
 
         {data.story.length > 0 && (
-          <section id="journey" className="px-6 py-16">
+          <section id="journey" data-anim={animFor("journey")} className="px-6 py-16">
             <SectionTitle>Our Journey</SectionTitle>
             <div className="relative ml-3 space-y-8 border-l-2 border-black/10 pl-6">
               {data.story.map((s, i) => (
@@ -358,7 +369,7 @@ export default function InvitationExperience({
         )}
 
         {data.gallery.length > 0 && (
-          <section id="galeri" className="overflow-hidden py-16" style={{ backgroundColor: tintBg }}>
+          <section id="galeri" data-anim={animFor("galeri")} className="overflow-hidden py-16" style={{ backgroundColor: tintBg }}>
             <div className="px-6"><SectionTitle>Galeri</SectionTitle></div>
             {data.galleryMode === "slide" ? (
               <div className="relative w-full overflow-hidden">
@@ -383,7 +394,7 @@ export default function InvitationExperience({
         )}
 
         {data.videoUrl && (
-          <section id="video" className="px-6 py-16">
+          <section id="video" data-anim={animFor("video")} className="px-6 py-16">
             <SectionTitle>Video</SectionTitle>
             {/youtube|youtu\.be/.test(data.videoUrl) ? (
               <div className="aspect-video w-full overflow-hidden rounded-xl">
@@ -396,19 +407,19 @@ export default function InvitationExperience({
         )}
 
         {data.banks.length > 0 && (
-          <section id="gift" className="px-6 py-16">
+          <section id="gift" data-anim={animFor("gift")} className="px-6 py-16">
             <SectionTitle>Amplop Digital</SectionTitle>
             <p className="mb-8 text-center text-sm text-gray-500">Doa restu Anda karunia terindah. Bila berkenan memberi tanda kasih:</p>
             <div className="space-y-4">{data.banks.map((b, i) => <GiftCard key={i} bank={b} heading={theme.vars.heading} />)}</div>
           </section>
         )}
 
-        <section id="rsvp" className="px-6 py-16" style={{ backgroundColor: tintBg }}>
+        <section id="rsvp" data-anim={animFor("rsvp")} className="px-6 py-16" style={{ backgroundColor: tintBg }}>
           <SectionTitle>Konfirmasi Kehadiran</SectionTitle>
           <RSVPBlock invitationId={previewMode ? null : data.id} defaultName={guestName} accent={theme.vars.accent} />
         </section>
 
-        <section id="closing" className="px-6 py-20 pb-28 text-center">
+        <section id="closing" data-anim={animFor("closing")} className="px-6 py-20 pb-28 text-center">
           <p className="mx-auto max-w-md text-sm leading-relaxed text-gray-600">{data.closingMessage}</p>
           <div className="my-8 mx-auto h-px w-16" style={{ background: theme.vars.accent, opacity: 0.6 }} />
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--accent)]">Wassalam</p>

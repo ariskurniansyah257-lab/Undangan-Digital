@@ -58,6 +58,28 @@ export interface ThemeStyle {
   vars: ThemeVars;
 }
 
+// Pengaturan per-halaman (per-slide) — seperti mengedit tiap halaman di PPT.
+export interface SlideOverride {
+  animation?: AnimationType;
+  ornament?: OrnamentType;
+  ornamentImage?: string | null;
+}
+
+// Daftar halaman template yang bisa diatur admin (transisi & ornamen per halaman).
+export const TEMPLATE_SLIDES: { id: string; label: string }[] = [
+  { id: "cover", label: "Sampul (Cover)" },
+  { id: "hero", label: "Pembuka" },
+  { id: "quote", label: "Kutipan / Ayat" },
+  { id: "mempelai", label: "Mempelai" },
+  { id: "acara", label: "Rangkaian Acara" },
+  { id: "journey", label: "Our Journey" },
+  { id: "galeri", label: "Galeri" },
+  { id: "video", label: "Video" },
+  { id: "gift", label: "Amplop / Gift" },
+  { id: "rsvp", label: "RSVP" },
+  { id: "closing", label: "Penutup" },
+];
+
 // Override yang bisa disimpan admin di kolom themes.config (jsonb).
 export interface ThemeConfigOverride {
   vars?: Partial<ThemeVars>;
@@ -65,6 +87,7 @@ export interface ThemeConfigOverride {
   ornamentImage?: string | null; // ornamen kustom (gambar) yang diunggah admin
   animation?: AnimationType;
   coverImage?: string | null;
+  slides?: Record<string, SlideOverride>; // pengaturan per halaman
 }
 
 // Tema efektif setelah base (dari slug) digabung override admin.
@@ -72,6 +95,7 @@ export interface ResolvedTheme extends ThemeStyle {
   animation: AnimationType;
   coverImage: string | null;
   ornamentImage: string | null;
+  slides: Record<string, SlideOverride>;
 }
 
 interface Concept {
@@ -159,6 +183,7 @@ export function resolveTheme(
     animation: cfg.animation ?? "fade",
     coverImage: cfg.coverImage ?? null,
     ornamentImage: cfg.ornamentImage ?? null,
+    slides: cfg.slides ?? {},
   };
 }
 

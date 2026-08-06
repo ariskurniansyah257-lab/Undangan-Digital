@@ -63,7 +63,26 @@ export async function uploadImage(
     const dataUrl = await compressImageToDataUrl(file);
     return { url: dataUrl, viaStorage: false };
   }
+
+  // Fallback audio/video tanpa Storage: simpan sebagai data URI bila ukurannya
+  // masih wajar (agar upload lagu tetap berhasil meski bucket belum dibuat).
+  const MAX_FALLBACK = 9 * 1024 * 1024; // ~9 MB
+  if (file.size <= MAX_FALLBACK) {
+    const dataUrl = await fileToDataUrl(file);
+    return { url: dataUrl, viaStorage: false };
+  }
   throw new Error(
-    "Upload file ini (audio/video) butuh Storage aktif. Aktifkan bucket 'invitations' di Supabase.",
+    `File terlalu besar (${(file.size / 1048576).toFixed(1)} MB) untuk mode tanpa Storage (maks 9 MB). ` +
+      "Aktifkan bucket 'invitations' di Supabase untuk file besar, atau pilih file lebih kecil.",
   );
+}
+
+/** Baca file apa pun menjadi data URI (fallback tanpa Storage). */
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result as string);
+    r.onerror = () => reject(new Error("Gagal membaca file."));
+    r.readAsDataURL(file);
+  });
 }

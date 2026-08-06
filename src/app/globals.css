@@ -128,20 +128,21 @@ section[id] {
   to { opacity: 1; clip-path: circle(140% at 50% 50%); }
 }
 
-.snap-slides[data-anim="morph"] > section.in-view > * { animation-name: morph-in; animation-duration: 0.7s; }
-.snap-slides[data-anim="ppt"] > section.in-view > * { animation-name: ppt-in; }
-.snap-slides[data-anim="push"] > section.in-view > * { animation-name: push-in; }
-.snap-slides[data-anim="zoom"] > section.in-view > * { animation-name: zoom-in; animation-duration: 0.8s; }
-.snap-slides[data-anim="flip"] > section.in-view > * { animation-name: flip-in; animation-duration: 0.8s; }
-.snap-slides[data-anim="wipe"] > section.in-view > * { animation-name: wipe-in; animation-duration: 0.7s; }
-.snap-slides[data-anim="split"] > section.in-view > * { animation-name: split-in; animation-duration: 0.7s; }
-.snap-slides[data-anim="reveal"] > section.in-view > * { animation-name: reveal-in; animation-duration: 0.7s; }
-.snap-slides[data-anim="cover"] > section.in-view > * { animation-name: cover-in; animation-duration: 0.7s; }
-.snap-slides[data-anim="dissolve"] > section.in-view > * { animation-name: dissolve-in; animation-duration: 0.9s; }
-.snap-slides[data-anim="cube"] > section.in-view > * { animation-name: cube-in; animation-duration: 0.85s; }
-.snap-slides[data-anim="fall"] > section.in-view > * { animation-name: fall-in; animation-duration: 0.8s; }
-.snap-slides[data-anim="blinds"] > section.in-view > * { animation-name: blinds-in; animation-duration: 0.8s; }
-.snap-slides[data-anim="shape"] > section.in-view > * { animation-name: shape-in; animation-duration: 0.9s; }
+/* Transisi per-halaman: tiap <section> punya data-anim sendiri. */
+.snap-slides > section[data-anim="morph"].in-view > * { animation-name: morph-in; animation-duration: 0.7s; }
+.snap-slides > section[data-anim="ppt"].in-view > * { animation-name: ppt-in; }
+.snap-slides > section[data-anim="push"].in-view > * { animation-name: push-in; }
+.snap-slides > section[data-anim="zoom"].in-view > * { animation-name: zoom-in; animation-duration: 0.8s; }
+.snap-slides > section[data-anim="flip"].in-view > * { animation-name: flip-in; animation-duration: 0.8s; }
+.snap-slides > section[data-anim="wipe"].in-view > * { animation-name: wipe-in; animation-duration: 0.7s; }
+.snap-slides > section[data-anim="split"].in-view > * { animation-name: split-in; animation-duration: 0.7s; }
+.snap-slides > section[data-anim="reveal"].in-view > * { animation-name: reveal-in; animation-duration: 0.7s; }
+.snap-slides > section[data-anim="cover"].in-view > * { animation-name: cover-in; animation-duration: 0.7s; }
+.snap-slides > section[data-anim="dissolve"].in-view > * { animation-name: dissolve-in; animation-duration: 0.9s; }
+.snap-slides > section[data-anim="cube"].in-view > * { animation-name: cube-in; animation-duration: 0.85s; }
+.snap-slides > section[data-anim="fall"].in-view > * { animation-name: fall-in; animation-duration: 0.8s; }
+.snap-slides > section[data-anim="blinds"].in-view > * { animation-name: blinds-in; animation-duration: 0.8s; }
+.snap-slides > section[data-anim="shape"].in-view > * { animation-name: shape-in; animation-duration: 0.9s; }
 
 @media (prefers-reduced-motion: reduce) {
   .snap-slides > section.in-view > * {
