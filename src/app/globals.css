@@ -37,6 +37,35 @@ section[id] {
   padding-bottom: 5rem; /* ruang untuk bottom-nav & tombol musik */
 }
 
+/* Animasi masuk saat slide tampil (fade + naik lembut, bertahap) */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.snap-slides > section.in-view > * {
+  animation: slide-in 0.6s ease both;
+}
+.snap-slides > section.in-view > *:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.snap-slides > section.in-view > *:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.snap-slides > section.in-view > *:nth-child(4) {
+  animation-delay: 0.24s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .snap-slides > section.in-view > * {
+    animation: none;
+  }
+}
+
 body {
   color: var(--foreground);
   background: var(--background);

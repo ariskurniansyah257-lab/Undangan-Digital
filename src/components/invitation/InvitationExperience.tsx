@@ -85,7 +85,12 @@ export default function InvitationExperience({
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
-          if (e.isIntersecting && e.target.id) setActiveId(e.target.id);
+          if (e.isIntersecting) {
+            if (e.target.id) setActiveId(e.target.id);
+            e.target.classList.add("in-view");
+          } else {
+            e.target.classList.remove("in-view");
+          }
         });
       },
       { root, threshold: 0.55 },
