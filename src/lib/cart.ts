@@ -7,6 +7,9 @@ export interface CartItem {
   name: string;
   price: number;
   qty: number;
+  themeId?: string; // tema yang dipilih (untuk item paket) → mengalir ke undangan
+  themeSlug?: string;
+  image?: string; // untuk pratinjau di keranjang
 }
 
 const KEY = "undangan_cart";
@@ -26,7 +29,7 @@ function save(items: CartItem[]) {
 }
 
 export function addToCart(item: Omit<CartItem, "qty" | "key"> & { qty?: number }) {
-  const key = `${item.type}:${item.refId}`;
+  const key = `${item.type}:${item.refId}${item.themeId ? `:${item.themeId}` : ""}`;
   const cart = getCart();
   const existing = cart.find((c) => c.key === key);
   if (existing) {

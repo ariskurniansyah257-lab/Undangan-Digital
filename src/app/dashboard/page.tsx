@@ -139,18 +139,22 @@ export default async function DashboardHome() {
         ) : (
           <div className="card divide-y divide-gray-100">
             {ords.map((o) => (
-              <div
+              <Link
                 key={o.id}
-                className="flex items-center justify-between p-4"
+                href={`/dashboard/orders/${o.id}`}
+                className="flex items-center justify-between p-4 hover:bg-gray-50"
               >
                 <div>
                   <p className="font-medium text-gray-900">{o.invoice_no}</p>
                   <p className="text-sm text-gray-500">{formatIDR(o.total)}</p>
                 </div>
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-                  {ORDER_STATUS[o.status].label}
-                </span>
-              </div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                    {ORDER_STATUS[o.status].label}
+                  </span>
+                  <span className="text-gray-400">›</span>
+                </div>
+              </Link>
             ))}
           </div>
         )}

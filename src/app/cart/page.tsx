@@ -62,6 +62,7 @@ export default function CartPage() {
       order_id: order.id,
       product_id: i.type === "product" ? i.refId : null,
       package_id: i.type === "package" ? slugToId[i.refId] ?? null : null,
+      theme_id: i.themeId ?? null,
       name: i.name,
       price: i.price,
       qty: i.qty,

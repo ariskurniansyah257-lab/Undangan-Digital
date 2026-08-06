@@ -25,8 +25,23 @@ export default function SongsManager({ initial }: { initial: Song[] }) {
     setTitle(""); setArtist(""); setUrl(""); setMsg("Ditambahkan ✓");
   }
   async function del(id: string) {
+    if (!confirm("Hapus lagu ini?")) return;
+    const prev = songs;
     setSongs(songs.filter((s) => s.id !== id));
-    await supabase.from("songs").delete().eq("id", id);
+    const { error, count } = await supabase
+      .from("songs")
+      .delete({ count: "exact" })
+      .eq("id", id);
+    if (error) {
+      setSongs(prev);
+      setMsg(`Gagal hapus: ${error.message}`);
+    } else if (count === 0) {
+      // Tidak ada baris terhapus — biasanya karena RLS (akun bukan admin).
+      setSongs(prev);
+      setMsg("Gagal hapus: tidak ada izin. Pastikan akun Anda admin (profiles.role = 'admin').");
+    } else {
+      setMsg("Lagu dihapus ✓");
+    }
   }
   async function toggle(s: Song) {
     setSongs(songs.map((x) => (x.id === s.id ? { ...x, is_active: !x.is_active } : x)));
